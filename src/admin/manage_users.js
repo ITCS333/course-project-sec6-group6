@@ -50,9 +50,10 @@ function handleChangePassword(event) {
   newPasswordInput.value     = '';
   confirmPasswordInput.value = '';
 
-  var user = JSON.parse(sessionStorage.getItem('user') || '{}');
+  var storage = (typeof sessionStorage !== 'undefined') ? sessionStorage : { getItem: function() { return null; } };
+  var user = JSON.parse(storage.getItem('user') || '{}');
   var id   = user.id;
-
+  
   fetch('../api/index.php?action=change_password', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
