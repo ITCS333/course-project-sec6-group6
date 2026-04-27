@@ -1,14 +1,10 @@
-
 let users = [];
-
 
 const userTableBody      = document.getElementById('user-table-body');
 const addUserForm        = document.getElementById('add-user-form');
 const changePasswordForm = document.getElementById('password-form');
 const searchInput        = document.getElementById('search-input');
 const tableHeaders       = document.querySelectorAll('#user-table thead th');
-
-
 
 function createUserRow(user) {
   const tr = document.createElement('tr');
@@ -33,9 +29,13 @@ function renderTable(userArray) {
 function handleChangePassword(event) {
   event.preventDefault();
 
-  const currentPassword = document.getElementById('current-password').value;
-  const newPassword     = document.getElementById('new-password').value;
-  const confirmPassword = document.getElementById('confirm-password').value;
+  const currentPasswordInput = document.getElementById('current-password');
+  const newPasswordInput     = document.getElementById('new-password');
+  const confirmPasswordInput = document.getElementById('confirm-password');
+
+  const currentPassword = currentPasswordInput.value;
+  const newPassword     = newPasswordInput.value;
+  const confirmPassword = confirmPasswordInput.value;
 
   if (newPassword !== confirmPassword) {
     alert('Passwords do not match.');
@@ -45,6 +45,11 @@ function handleChangePassword(event) {
     alert('Password must be at least 8 characters.');
     return;
   }
+
+  // Clear fields immediately (synchronously) after validation passes
+  currentPasswordInput.value = '';
+  newPasswordInput.value     = '';
+  confirmPasswordInput.value = '';
 
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
   const id   = user.id;
@@ -58,9 +63,6 @@ function handleChangePassword(event) {
     .then(data => {
       if (data.success) {
         alert('Password updated successfully!');
-        document.getElementById('current-password').value = '';
-        document.getElementById('new-password').value     = '';
-        document.getElementById('confirm-password').value = '';
       } else {
         alert(data.message);
       }
@@ -191,12 +193,15 @@ async function loadUsersAndInitialize() {
   users = json.data;
   renderTable(users);
 
-  changePasswordForm.addEventListener('submit', handleChangePassword, { once: true });
-  addUserForm.addEventListener('submit',        handleAddUser,        { once: true });
-  userTableBody.addEventListener('click',       handleTableClick);
-  searchInput.addEventListener('input',         handleSearch);
-  tableHeaders.forEach(th => th.addEventListener('click', handleSort));
+  if (!loadUsersAndInitialize._listenersAttached) {
+    changePasswordForm.addEventListener('submit', handleChangePassword);
+    addUserForm.addEventListener('submit',        handleAddUser);
+    userTableBody.addEventListener('click',       handleTableClick);
+    searchInput.addEventListener('input',         handleSearch);
+    tableHeaders.forEach(th => th.addEventListener('click', handleSort));
+    loadUsersAndInitialize._listenersAttached = true;
+  }
 }
 
-
+loadUsersAndInitialize._listenersAttached = false;
 loadUsersAndInitialize();
