@@ -19,7 +19,16 @@
 
     <!-- TODO: Add a <script> tag that loads 'manage_users.js' with the 'defer' attribute.
          Example: <script src="manage_users.js" defer></script> -->
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        body { padding: 1rem; }
+        #message-container { margin: 0.5rem 0; }
+        #message-container.error   { color: var(--pico-color-red-500, #e53e3e); }
+        #message-container.success { color: var(--pico-color-green-500, #38a169); }
+    </style>
 </head>
 <body>
 
@@ -66,11 +75,33 @@
                 <!-- End of the fieldset. -->
             <!-- End of the password form. -->
         <!-- End of the password management section. -->
+ <section>
+            <h2>Change Password</h2>
+            <form id="password-form">
+                <fieldset>
+                    <legend>Update Your Password</legend>
+
+                    <label for="current-password">Current Password</label>
+                    <input type="password" id="current-password" name="current_password" required>
+
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" name="new_password" minlength="8" required>
+
+                    <label for="confirm-password">Confirm New Password</label>
+                    <input type="password" id="confirm-password" name="confirm_password" required>
+
+                    <button type="submit" id="change">Change Password</button>
+                </fieldset>
+            </form>
+            <div id="password-message"></div>
+        </section>
 
 
         <!-- Section 2: User Management -->
         <!-- TODO: Create another 'section' for the user management functionality. -->
             <!-- TODO: Add a sub-heading (e.g., 'h2') with the text "Manage Users". -->
+         <section>
+            <h2>User Management</h2>
 
             <!-- Subsection 2.1: Add New User Form -->
             <!-- TODO: Create a 'details' element so the "Add User" form can be collapsed. -->
@@ -116,6 +147,31 @@
                     <!-- End of the fieldset. -->
                 <!-- End of the add user form. -->
             <!-- End of the 'details' element. -->
+           <details>
+                <summary>Add New User</summary>
+                <form id="add-user-form">
+                    <fieldset>
+                        <legend>New User Details</legend>
+
+                        <label for="user-name">Full Name</label>
+                        <input type="text" id="user-name" name="name" required>
+
+                        <label for="user-email">Email Address</label>
+                        <input type="email" id="user-email" name="email" required>
+
+                        <label for="default-password">Default Password</label>
+                        <input type="password" id="default-password" name="password" minlength="8" required>
+
+                        <label for="is-admin">Role</label>
+                        <select id="is-admin" name="is_admin">
+                            <option value="0">Student</option>
+                            <option value="1">Admin</option>
+                        </select>
+
+                        <button type="submit" id="add">Add User</button>
+                    </fieldset>
+                </form>
+            </details>
 
 
             <!-- Subsection 2.2: User List -->
@@ -143,8 +199,29 @@
             <!-- End of the table. -->
 
         <!-- End of the user management section. -->
+    <div id="message-container"></div>
 
+            <input id="search-input" type="search" placeholder="Search users…" aria-label="Search users">
+
+            <table id="user-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="user-table-body"></tbody>
+            </table>
+        </section>
+
+    </main>
+
+    <script src="manage_users.js" defer></script>
     <!-- End of the main content area. -->
 
 </body>
 </html>
+
+
