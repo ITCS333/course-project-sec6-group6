@@ -59,6 +59,8 @@ function getResourceIdFromURL() {
  */
 function renderResourceDetails(resource) {
   // ... your implementation here ...
+  if (!titleEl || !descEl || !linkEl) return;
+
     titleEl.textContent = resource.title;
   descEl.textContent = resource.description;
   linkEl.href = resource.link;
@@ -98,6 +100,8 @@ function createCommentArticle(comment) {
  */
 function renderComments() {
   // ... your implementation here ...
+  if (!commentList) return;
+
     commentList.innerHTML = "";
 
   currentComments.forEach(comment => {
@@ -134,7 +138,7 @@ function handleAddComment(event) {
 
   let commentText = textarea.value;
 
-  if (!commentText) return;
+  if (!commentText.trim()) return;
 
   fetch('./api/index.php?action=comment', {
     method: 'POST',
@@ -198,6 +202,8 @@ async function initializePage() {
     return;
   }
 
+  try{
+
   // fetch resource + comments
   const [resResponse, comResponse] = await Promise.all([
     fetch(`./api/index.php?id=${currentResourceId}`),
@@ -215,10 +221,15 @@ async function initializePage() {
     renderResourceDetails(resData.data);
     renderComments();
 
+if (commentForm){
     commentForm.addEventListener("submit", handleAddComment);
+}
   } else {
-    titleEl.textContent = "Resource not found.";
+    if (titleEl) titleEl.textContent = "Resource not found.";
   }
+}catch(err){
+    if (titleEl) titleEl.textContent = "Error loading resource.";
+}
 }
 
 // --- Initial Page Load ---
