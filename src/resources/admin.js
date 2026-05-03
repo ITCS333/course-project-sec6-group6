@@ -16,8 +16,8 @@
 let resources = [];
 
 // --- Element Selections ---
-let form = document.getElementById("resource-form");
-let tbody = document.getElementById("resources-tbody");
+const form = document.getElementById("resource-form");
+const tbody = document.getElementById("resources-tbody");
 
 // --- Functions ---
 
@@ -82,8 +82,9 @@ function renderTable() {
   const tbody = document.getElementById("resources-tbody");
 
   if (!tbody) return;
+
   tbody.innerHTML = "";
-  
+
   resources.forEach(resource => {
     const row = createResourceRow(resource);
     tbody.appendChild(row);
@@ -255,6 +256,9 @@ async function loadAndInitialize() {
   resources = result.success ? result.data : [];
 
   renderTable();
+
+   const form = document.getElementById("resource-form");
+  const tbody = document.getElementById("resources-tbody");
 
   form.addEventListener("submit", handleAddResource);
   tbody.addEventListener("click", handleTableClick);
