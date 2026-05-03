@@ -46,23 +46,20 @@ function createResourceRow(resource) {
 
   let tdActions = document.createElement("td");
 
-  let visit = document.createElement("a");
-  visit.textContent = "Visit";
-  visit.href = resource.link;
 
-  let edit = document.createElement("button");
-  edit.textContent = "Edit";
-  edit.className = "edit-btn";
-  edit.dataset.id = resource.id;
+  let editBtn = document.createElement("button");
+  editBtn.textContent = "Edit";
+  editBtn.className = "edit-btn";
+  editBtn.dataset.id = resource.id;
 
-  let del = document.createElement("button");
-  del.textContent = "Delete";
-  del.className = "delete-btn";
-  del.dataset.id = resource.id;
+  let deleteBtn = document.createElement("button");
+  deleteBtn.textContent = "Delete";
+  deleteBtn.className = "delete-btn";
+  deleteBtn.dataset.id = resource.id;
 
-  tdActions.appendChild(visit);
-  tdActions.appendChild(edit);
-  tdActions.appendChild(del);
+
+  tdActions.appendChild(editBtn);
+  tdActions.appendChild(deleteBtn);
 
   tr.appendChild(tdTitle);
   tr.appendChild(tdDesc);
@@ -82,17 +79,11 @@ function createResourceRow(resource) {
  *    append the returned <tr> to the table body.
  */
 function renderTable() {
-
-   const tbody = document.getElementById("resources-tbody");
-
-  if (!tbody) return;
-
-  tbody.innerHTML = "";
+tbody.innerHTML = "";
 
   resources.forEach(resource => {
     tbody.appendChild(createResourceRow(resource));
-  });
-
+     });
 }
 
 /**
@@ -115,8 +106,7 @@ function renderTable() {
  * 6. Reset the form.
  */
 function handleAddResource(event) {
-
-    event.preventDefault();
+ event.preventDefault();
 
   const title = document.getElementById("resource-title").value;
   const description = document.getElementById("resource-description").value;
@@ -124,37 +114,44 @@ function handleAddResource(event) {
 
   const editId = form.dataset.editId;
 
-  // UPDATE MODE
+  // UPDATE MODE (PUT)
   if (editId) {
-    fetch('./api/index.php', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("./api/index.php", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: editId, title, description, link })
-    }).then(res => res.json())
+    })
+      .then(res => res.json())
       .then(result => {
         if (result.success) {
           const index = resources.findIndex(r => r.id == editId);
-          resources[index] = { id: editId, title, description, link };
+
+          resources[index] = {
+            id: editId,
+            title,
+            description,
+            link
+          };
 
           renderTable();
+
           form.reset();
           delete form.dataset.editId;
+
           document.getElementById("add-resource").textContent = "Add Resource";
         }
       });
 
     return;
   }
-
-  // ADD MODE
-  fetch('./api/index.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  // CREATE MODE (POST)
+  fetch("./api/index.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title, description, link })
   })
-  .then(res => res.json())
-  .then(result => {
-    if (result.success) {
+    .then(res => res.json())
+    .then(result => {
       resources.push({
         id: result.id,
         title,
@@ -164,9 +161,9 @@ function handleAddResource(event) {
 
       renderTable();
       form.reset();
-    }
-  });
-}
+    });
+  }
+
 
 /**
  * TODO: Implement the handleTableClick function.
@@ -183,6 +180,7 @@ function handleAddResource(event) {
  * 4. Call `renderTable()` to refresh the list.
  *
  * If the clicked element has class "edit-btn":
+ * 
  * 1. Get the resource id from the button's data-id attribute.
  * 2. Find the matching resource in the global `resources` array.
  * 3. Populate the form fields (id="resource-title", id="resource-description",
@@ -225,48 +223,9 @@ function handleTableClick(event) {
 
     form.dataset.editId = id;
     document.getElementById("add-resource").textContent = "Update Resource";
+    //form.dataset.editId = id;
   }
-  }
 
-
-fetch('./api/index.php', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        id,
-        title: resource.title,
-        description: resource.description,
-        link: resource.link
-      })
-    })
-    .then(res => res.json())
-    .then(result => {
-      if (result.success) {
-
-       
-        const index = resources.findIndex(r => r.id == id);
-
-        resources[index] = {
-          id,
-          title: resource.title,
-          description: resource.description,
-          link: resource.link
-        };
-
-       
-        renderTable();
-
-        document.getElementById("resource-title").value = "";
-        document.getElementById("resource-description").value = "";
-        document.getElementById("resource-link").value = "";
-
-        delete form.dataset.editId;
-
-        document.getElementById("add-resource").textContent = "Add Resource";
-      }
-    });
   }
 
 
@@ -289,20 +248,11 @@ async function loadAndInitialize() {
   const response = await fetch('./api/index.php');
   const result = await response.json();
 
-  // تخزين البيانات في المتغير العالمي
-  if (result.success) {
-    resources = result.data;
-  }
+  resources = result.success ? result.data : [];
 
-  // عرض الجدول لأول مرة
   renderTable();
 
-  //ربط الفورم (submit)
-  const form = document.getElementById("resource-form");
   form.addEventListener("submit", handleAddResource);
-
-  //ربط الجدول (click)
-  const tbody = document.getElementById("resources-tbody");
   tbody.addEventListener("click", handleTableClick);
 }
 
