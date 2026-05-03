@@ -79,11 +79,15 @@ function createResourceRow(resource) {
  *    append the returned <tr> to the table body.
  */
 function renderTable() {
-tbody.innerHTML = "";
+  const tbody = document.getElementById("resources-tbody");
 
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  
   resources.forEach(resource => {
-    tbody.appendChild(createResourceRow(resource));
-     });
+    const row = createResourceRow(resource);
+    tbody.appendChild(row);
+  });
 }
 
 /**
