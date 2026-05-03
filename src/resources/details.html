@@ -10,19 +10,36 @@
 <html lang="en">
 <head>
     <!-- TODO: Add meta tags for charset and viewport. -->
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- TODO: Add a title. You can make it dynamic later, but for now, use "Resource Details". -->
+     <title>Resource Details</title>
+
 
     <!-- TODO: Link to your CSS framework or stylesheet. -->
+     \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+     <link rel="stylesheet" href="style.css">
 
-    <!-- TODO: Link this script file:
-         <script src="details.js" defer></script> -->
+    <!-- TODO: Link this script file: -->
+           <script src="details.js" defer></script>
 </head>
 <body>
     <!-- TODO: Create a 'header' with a main heading ('h1').
          Add id="resource-title" to the <h1>. This id is required by details.js. -->
+             <header>
+             <h1 id="resource-title"></h1>
+             </header>
+
 
     <!-- TODO: Create the 'main' content area. -->
+        <main>
+
+    <!--  Resource Information -->
+    <article>
+
+     \\by js
+    </article>
 
         <!-- Section 1: Resource Information -->
         <!-- TODO: Use an 'article' to display the main resource information. -->
@@ -34,42 +51,43 @@
                  - Add target="_blank" to open it in a new tab. -->
         <!-- End of article. -->
 
-        <!-- Section 2: Discussion Forum -->
-        <!-- TODO: Create a 'section' for the discussion, with an 'id' of "discussion-forum". -->
-            <!-- TODO: Add a sub-heading ('h2') "Discussion". -->
 
-            <!-- Subsection 2.1: Existing Comments -->
-            <!-- TODO: Add a <div> for the list of comments.
-                 Add id="comment-list" to this <div>. This id is required by details.js.
-                 Comments will be injected here dynamically by details.js. -->
+   <!--  Discussion Forum -->
+    <section id="discussion-forum">
 
-                <!-- Each comment follows this structure: -->
-                <!-- TODO: Use an 'article' for each comment. -->
-                    <!-- TODO: Use a 'p' for the comment text. -->
-                    <!-- TODO: Use a 'footer' to show the author
-                         (e.g., "Posted by: Ali Hassan"). -->
-                <!-- End of comment article. -->
+      <h2>Discussion</h2>
 
-            <!-- End of comment list div. -->
+      <!-- Comments List -->
+      <div id="comment-list">
 
-            <!-- Subsection 2.2: Add a Comment Form -->
-            <!-- TODO: Create a 'form' for users to post new comments.
-                 Add id="comment-form" to this <form>. This id is required by details.js.
-                 Action can be '#'. -->
-                <!-- TODO: Use a 'fieldset' to group the controls. -->
-                    <!-- TODO: Add a 'legend', e.g., "Leave a Comment". -->
+        <!-- comments injected by JS -->
 
-                    <!-- TODO: Add a 'label' and 'textarea' for the comment box.
-                         - label 'for': "new-comment"
-                         - textarea 'id': "new-comment", required
-                         This id is required by details.js. -->
-                    
-                    <!-- TODO: Add a 'button' to submit the comment.
-                         - type="submit", Text: "Post Comment" -->
-                <!-- End of fieldset. -->
-            <!-- End of form. -->
-        <!-- End of discussion section. -->
+          <article>\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+    <p>Comment text here</p>
+    <footer>Posted by: </footer>
+  </article>\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+      </div>
+
+      <!-- Add Comment Form -->
+      <form id="comment-form" action="#">
+
+        <fieldset>
+
+          <legend>Leave a Comment</legend>
+
+          <label for="new-comment">Comment</label>
+          <textarea id="new-comment" required></textarea>
+
+          <button type="submit">Post Comment</button>
+
+        </fieldset>
+
+      </form>
+
+    </section>
 
     <!-- End of main. -->
+
+  </main>
 </body>
 </html>

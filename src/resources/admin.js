@@ -16,9 +16,8 @@
 let resources = [];
 
 // --- Element Selections ---
-// TODO: Select the resource form ('#resource-form').
-
-// TODO: Select the resources table body ('#resources-tbody').
+let form = document.getElementById("resource-form");
+let tbody = document.getElementById("resources-tbody");
 
 // --- Functions ---
 
@@ -34,7 +33,19 @@ let resources = [];
  *    - A "Delete" button with class="delete-btn" and data-id="${id}".
  */
 function createResourceRow(resource) {
-  // ... your implementation here ...
+let tr = document.createElement("tr");
+
+  tr.innerHTML = `
+    <td>${resource.title}</td>
+    <td>${resource.description}</td>
+    <td><a href="${resource.link}" target="_blank">Visit</a></td>
+    <td>
+      <button class="edit-btn" data-id="${resource.id}">Edit</button>
+      <button class="delete-btn" data-id="${resource.id}">Delete</button>
+    </td>
+  `;
+
+  return tr;
 }
 
 /**
@@ -46,7 +57,18 @@ function createResourceRow(resource) {
  *    append the returned <tr> to the table body.
  */
 function renderTable() {
-  // ... your implementation here ...
+
+  // 1. تفريغ الجدول
+  tbody.innerHTML = "";
+
+  // 2. المرور على كل resource
+  resources.forEach(resource => {
+   let row = createResourceRow(resource);
+
+    // 3. إضافة الصف للجدول
+    tbody.appendChild(row);
+  });
+
 }
 
 /**
@@ -69,7 +91,36 @@ function renderTable() {
  * 6. Reset the form.
  */
 function handleAddResource(event) {
-  // ... your implementation here ...
+
+  event.preventDefault();
+
+  let title = document.getElementById("resource-title").value;
+  let description = document.getElementById("resource-description").value;
+  let link = document.getElementById("resource-link").value;
+
+  fetch('./api/index.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ title, description, link })
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.success) {
+      const newResource = {
+        id: result.id,
+        title,
+        description,
+        link
+      };
+
+      resources.push(newResource);
+      renderTable();
+      form.reset();
+    }
+  });
+
 }
 
 /**
@@ -78,7 +129,7 @@ function handleAddResource(event) {
  * It should:
  *
  * If the clicked element has class "delete-btn":
- * 1. Get the resource id from the button's data-id attribute.
+ * 1. Get the resource id from the button's data-id attribute.............
  * 2. Use `fetch()` to DELETE the resource via the API:
  *    - URL: `./api/index.php?id=${id}`
  *    - Method: DELETE
@@ -94,6 +145,7 @@ function handleAddResource(event) {
  *    can edit them.
  * 4. Change the submit button (id="add-resource") text to "Update Resource"
  *    to indicate edit mode.
+ * \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
  * 5. On form submit, use `fetch()` to PUT the updated resource to the API:
  *    - URL: './api/index.php'
  *    - Method: PUT
@@ -104,8 +156,75 @@ function handleAddResource(event) {
  *    restoring the submit button text to "Add Resource".
  */
 function handleTableClick(event) {
-  // ... your implementation here ...
-}
+let id = event.target.dataset.id;
+
+  if (event.target.classList.contains("delete-btn")) {
+    fetch(`./api/index.php?id=${id}`, {
+      method: 'DELETE'
+    })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        resources = resources.filter(r => r.id != id);
+        renderTable();
+      }
+    });
+  }
+
+
+  if (event.target.classList.contains("edit-btn")) {
+    let resource = resources.find(r => r.id == id);
+
+    document.getElementById("resource-title").value = resource.title;
+    document.getElementById("resource-description").value = resource.description;
+    document.getElementById("resource-link").value = resource.link;
+
+    document.getElementById("add-resource").textContent = "Update Resource";
+
+      form.dataset.editId = id;
+  }
+
+
+fetch('./api/index.php', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        id,
+        title: resource.title,
+        description: resource.description,
+        link: resource.link
+      })
+    })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+
+       
+        const index = resources.findIndex(r => r.id == id);
+
+        resources[index] = {
+          id,
+          title: resource.title,
+          description: resource.description,
+          link: resource.link
+        };
+
+       
+        renderTable();
+
+        document.getElementById("resource-title").value = "";
+        document.getElementById("resource-description").value = "";
+        document.getElementById("resource-link").value = "";
+
+        delete form.dataset.editId;
+
+        document.getElementById("add-resource").textContent = "Add Resource";
+      }
+    });
+  }
+
 
 /**
  * TODO: Implement the loadAndInitialize function.
@@ -122,8 +241,27 @@ function handleTableClick(event) {
  *    calling `handleTableClick`.
  */
 async function loadAndInitialize() {
-  // ... your implementation here ...
+  // GET all resources
+  const response = await fetch('./api/index.php');
+  const result = await response.json();
+
+  // تخزين البيانات في المتغير العالمي
+  if (result.success) {
+    resources = result.data;
+  }
+
+  // عرض الجدول لأول مرة
+  renderTable();
+
+  //ربط الفورم (submit)
+  const form = document.getElementById("resource-form");
+  form.addEventListener("submit", handleAddResource);
+
+  //ربط الجدول (click)
+  const tbody = document.getElementById("resources-tbody");
+  tbody.addEventListener("click", handleTableClick);
 }
+
 
 // --- Initial Page Load ---
 // Call the main async function to start the application.

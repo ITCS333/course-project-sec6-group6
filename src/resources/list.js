@@ -13,6 +13,7 @@
 
 // --- Element Selections ---
 // TODO: Select the section for the resource list ('#resource-list-section').
+const section = document.getElementById("resource-list-section");
 
 // --- Functions ---
 
@@ -25,6 +26,23 @@
  */
 function createResourceArticle(resource) {
   // ... your implementation here ...
+  const article = document.createElement("article");
+
+  const title = document.createElement("h2");
+  title.textContent = resource.title;
+
+  const desc = document.createElement("p");
+  desc.textContent = resource.description;
+
+  const link = document.createElement("a");
+  link.href = `details.html?id=${resource.id}`;
+  link.textContent = "View Resource & Discussion";
+
+  article.appendChild(title);
+  article.appendChild(desc);
+  article.appendChild(link);
+
+  return article;
 }
 
 /**
@@ -41,6 +59,25 @@ function createResourceArticle(resource) {
  */
 async function loadResources() {
   // ... your implementation here ...
+    // fetch
+  const response = await fetch('./api/index.php');
+
+  // json
+  let result = await response.json();
+
+  //clear
+  section.innerHTML = "";
+
+  //loop
+  if (result.success) {
+    result.data.forEach(resource => {
+
+      let article = createResourceArticle(resource);
+
+      section.appendChild(article);
+
+    });
+  }
 }
 
 // --- Initial Page Load ---
