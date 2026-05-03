@@ -79,7 +79,7 @@ function createResourceRow(resource) {
  *    append the returned <tr> to the table body.
  */
 function renderTable() {
-  const tbody = document.getElementById("resources-tbody");
+  //const tbody = document.getElementById("resources-tbody");
 
   if (!tbody) return;
 
@@ -256,9 +256,6 @@ async function loadAndInitialize() {
   resources = result.success ? result.data : [];
 
   renderTable();
-
-   const form = document.getElementById("resource-form");
-  const tbody = document.getElementById("resources-tbody");
 
   form.addEventListener("submit", handleAddResource);
   tbody.addEventListener("click", handleTableClick);
