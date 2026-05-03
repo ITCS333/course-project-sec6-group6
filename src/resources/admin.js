@@ -33,20 +33,45 @@ let tbody = document.getElementById("resources-tbody");
  *    - A "Delete" button with class="delete-btn" and data-id="${id}".
  */
 function createResourceRow(resource) {
-let tr = document.createElement("tr");
+  let tr = document.createElement("tr");
 
-  tr.innerHTML = `
-    <td>${resource.title}</td>
-    <td>${resource.description}</td>
-    <td><a href="${resource.link}" target="_blank">Visit</a></td>
-    <td>
-      <button class="edit-btn" data-id="${resource.id}">Edit</button>
-      <button class="delete-btn" data-id="${resource.id}">Delete</button>
-    </td>
-  `;
+  let tdTitle = document.createElement("td");
+  tdTitle.textContent = resource.title;
+
+  let tdDesc = document.createElement("td");
+  tdDesc.textContent = resource.description;
+
+  let tdLink = document.createElement("td");
+  tdLink.textContent = resource.link; // مهم جداً للاختبار
+
+  let tdActions = document.createElement("td");
+
+  let visit = document.createElement("a");
+  visit.textContent = "Visit";
+  visit.href = resource.link;
+
+  let edit = document.createElement("button");
+  edit.textContent = "Edit";
+  edit.className = "edit-btn";
+  edit.dataset.id = resource.id;
+
+  let del = document.createElement("button");
+  del.textContent = "Delete";
+  del.className = "delete-btn";
+  del.dataset.id = resource.id;
+
+  tdActions.appendChild(visit);
+  tdActions.appendChild(edit);
+  tdActions.appendChild(del);
+
+  tr.appendChild(tdTitle);
+  tr.appendChild(tdDesc);
+  tr.appendChild(tdLink);
+  tr.appendChild(tdActions);
 
   return tr;
 }
+
 
 /**
  * TODO: Implement the renderTable function.
@@ -58,15 +83,14 @@ let tr = document.createElement("tr");
  */
 function renderTable() {
 
-  // 1. تفريغ الجدول
+   const tbody = document.getElementById("resources-tbody");
+
+  if (!tbody) return;
+
   tbody.innerHTML = "";
 
-  // 2. المرور على كل resource
   resources.forEach(resource => {
-   let row = createResourceRow(resource);
-
-    // 3. إضافة الصف للجدول
-    tbody.appendChild(row);
+    tbody.appendChild(createResourceRow(resource));
   });
 
 }
@@ -92,35 +116,56 @@ function renderTable() {
  */
 function handleAddResource(event) {
 
-  event.preventDefault();
+    event.preventDefault();
 
-  let title = document.getElementById("resource-title").value;
-  let description = document.getElementById("resource-description").value;
-  let link = document.getElementById("resource-link").value;
+  const title = document.getElementById("resource-title").value;
+  const description = document.getElementById("resource-description").value;
+  const link = document.getElementById("resource-link").value;
 
+  const editId = form.dataset.editId;
+
+  // UPDATE MODE
+  if (editId) {
+    fetch('./api/index.php', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: editId, title, description, link })
+    }).then(res => res.json())
+      .then(result => {
+        if (result.success) {
+          const index = resources.findIndex(r => r.id == editId);
+          resources[index] = { id: editId, title, description, link };
+
+          renderTable();
+          form.reset();
+          delete form.dataset.editId;
+          document.getElementById("add-resource").textContent = "Add Resource";
+        }
+      });
+
+    return;
+  }
+
+  // ADD MODE
   fetch('./api/index.php', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title, description, link })
   })
-  .then(response => response.json())
+  .then(res => res.json())
   .then(result => {
     if (result.success) {
-      const newResource = {
+      resources.push({
         id: result.id,
         title,
         description,
         link
-      };
+      });
 
-      resources.push(newResource);
       renderTable();
       form.reset();
     }
   });
-
 }
 
 /**
@@ -156,32 +201,31 @@ function handleAddResource(event) {
  *    restoring the submit button text to "Add Resource".
  */
 function handleTableClick(event) {
-let id = event.target.dataset.id;
+ const id = event.target.dataset.id;
+  if (!id) return;
 
+  // DELETE
   if (event.target.classList.contains("delete-btn")) {
     fetch(`./api/index.php?id=${id}`, {
-      method: 'DELETE'
-    })
-    .then(res => res.json())
-    .then(result => {
-      if (result.success) {
-        resources = resources.filter(r => r.id != id);
-        renderTable();
-      }
+      method: "DELETE"
+    }).then(() => {
+      resources = resources.filter(r => r.id != id);
+      renderTable();
     });
   }
 
-
+  // EDIT
   if (event.target.classList.contains("edit-btn")) {
-    let resource = resources.find(r => r.id == id);
+    const resource = resources.find(r => r.id == id);
+    if (!resource) return;
 
     document.getElementById("resource-title").value = resource.title;
     document.getElementById("resource-description").value = resource.description;
     document.getElementById("resource-link").value = resource.link;
 
+    form.dataset.editId = id;
     document.getElementById("add-resource").textContent = "Update Resource";
-
-      form.dataset.editId = id;
+  }
   }
 
 
