@@ -127,8 +127,9 @@ function deleteResource($db, $resourceId) {
 
     $check = $db->prepare("SELECT id FROM resources WHERE id = ?");
     $check->execute([$resourceId]);
+    $existing = $check->fetch(PDO::FETCH_ASSOC);
 
-    if ($check->!$check->fetch()) {
+    if (!$existing) {
         sendResponse(['success' => false, 'message' => 'Resource not found.'], 404);
         return;
     }
@@ -173,8 +174,9 @@ function createComment($db, $data) {
 
     $check = $db->prepare("SELECT id FROM resources WHERE id = ?");
     $check->execute([$resourceId]);
+    $existing = $check->fetch(PDO::FETCH_ASSOC);
 
-    if ($check->!$check->fetch()) {
+    if (!$existing) {
         sendResponse(['success' => false, 'message' => 'Resource not found.'], 404);
         return;
     }
@@ -188,14 +190,7 @@ function createComment($db, $data) {
     sendResponse([
         'success' => true,
         'message' => 'Comment added successfully.',
-        'id'      => (int) $db->lastInsertId(),
-        'data'    => [
-            'id'          => (int) $db->lastInsertId(),
-            'resource_id' => (int) $resourceId,
-            'author'      => $author,
-            'text'        => $text,
-            'created_at'  => date('Y-m-d H:i:s'),
-        ]
+        'id'      => (int) $db->lastInsertId()
     ], 201);
 }
 
@@ -208,8 +203,9 @@ function deleteComment($db, $commentId) {
 
     $check = $db->prepare("SELECT id FROM comments_resource WHERE id = ?");
     $check->execute([$commentId]);
+    $existing = $check->fetch(PDO::FETCH_ASSOC);
 
-    if ($check->!$check->fetch()) {
+    if (!$existing) {
         sendResponse(['success' => false, 'message' => 'Comment not found.'], 404);
         return;
     }
