@@ -229,11 +229,8 @@ function getResourceById($db, $resourceId) {
 
     // TODO: Prepare SQL query
     // SELECT id, title, description, link, created_at FROM resources WHERE id = ?
-      $sql = "SELECT id, title, description, link, created_at 
-            FROM resources 
-            WHERE id = ?";
 
-    $stmt = $db->prepare($sql);
+   $stmt = $db->prepare("SELECT id, title, description, link, created_at FROM resources WHERE id = ?");
 
     // TODO: Bind $resourceId and execute
      $stmt->execute([$resourceId]);
@@ -291,6 +288,37 @@ function createResource($db, $data) {
     // TODO: If rowCount() > 0, return success response with HTTP 201
     //       and include the new id from $db->lastInsertId()
     // If failed, return error response with HTTP 500
+        if (empty($data['title']) || empty($data['link'])) {
+        http_response_code(400);
+        sendResponse(['success' => false, 'message' => 'Title and link are required.']);
+        return;
+    }
+
+    $title       = trim($data['title']);
+    $description = isset($data['description']) ? trim($data['description']) : '';
+    $link        = trim($data['link']);
+
+    if (!filter_var($link, FILTER_VALIDATE_URL)) {
+        http_response_code(400);
+        sendResponse(['success' => false, 'message' => 'Invalid URL.']);
+        return;
+    }
+
+    $stmt = $db->prepare("INSERT INTO resources (title, description, link) VALUES (?, ?, ?)");
+    $stmt->execute([$title, $description, $link]);
+
+    if ($stmt->rowCount() > 0) {
+        http_response_code(201);
+        sendResponse([
+            'success' => true,
+            'message' => 'Resource created successfully.',
+            'id'      => $db->lastInsertId()
+        ]);
+    } else {
+        http_response_code(500);
+        sendResponse(['success' => false, 'message' => 'Failed to create resource.']);
+    }
+
 }
 
 
@@ -314,7 +342,7 @@ function createResource($db, $data) {
 function updateResource($db, $data) {
     // TODO: Validate that id is provided in $data
     // If not, return error response with HTTP 400
-    if (empty($data['title']) || empty($data['link'])) {
+    if (empty($data['title'])) {
         http_response_code(400);
         sendResponse([
             'success' => false,
@@ -325,9 +353,20 @@ function updateResource($db, $data) {
 
     // TODO: Check if the resource exists — SELECT by id
     // If not found, return error response with HTTP 404
-     $title = trim($data['title']);
-    $description = isset($data['description']) ? trim($data['description']) : '';
-    $link = trim($data['link']);
+    $check = $db->prepare("SELECT id, title, description, link FROM resources WHERE id = ?");
+    $check->execute([$data['id']]);
+    $existing = $check->fetch(PDO::FETCH_ASSOC);
+
+    if (!$existing) {
+        http_response_code(404);
+        sendResponse(['success' => false, 'message' => 'Resource not found.']);
+        return;
+    }
+
+    // استخدم القيم الموجودة كـ fallback
+    $title       = isset($data['title'])       ? trim($data['title'])       : $existing['title'];
+    $description = isset($data['description']) ? trim($data['description']) : $existing['description'];
+    $link        = isset($data['link'])        ? trim($data['link'])        : $existing['link'];
 
     // TODO: Build UPDATE query dynamically for only the fields provided
     // (title, description, link — check which are present in $data)
@@ -346,32 +385,17 @@ function updateResource($db, $data) {
 
     // TODO: Build the final SQL:
     // UPDATE resources SET field1 = ?, field2 = ?, ... WHERE id = ?
-     $sql = "INSERT INTO resources (title, description, link) VALUES (?, ?, ?)";
-    $stmt = $db->prepare($sql);
-
-
     // TODO: Prepare, bind all update values then bind id, and execute
-        $stmt->execute([$title, $description, $link]);
-
     // TODO: Return success response with HTTP 200
     // If execution failed, return error response with HTTP 500
-      if ($stmt->rowCount() > 0) {
-
-        http_response_code(201);
-
-        sendResponse([
-            'success' => true,
-            'message' => 'Resource created successfully.',
-            'id' => $db->lastInsertId()
-        ]);
-
-    } else {
-        http_response_code(500);
-        sendResponse([
-            'success' => false,
-            'message' => 'Failed to create resource.'
-        ]);
-    }
+      $stmt = $db->prepare("UPDATE resources SET title = ?, description = ?, link = ? WHERE id = ?");
+    $stmt->execute([$title, $description, $link, $data['id']]);
+   if ($stmt->rowCount() > 0) {
+    http_response_code(200);
+    sendResponse(['success' => true, 'message' => 'Resource updated successfully.']);
+} else {
+    http_response_code(500);
+    sendResponse(['success' => false, 'message' => 'Failed to update resource.']);
 }
 
 
@@ -404,11 +428,10 @@ if (!$resourceId || !is_numeric($resourceId)) {
     }
     // TODO: Check if the resource exists — SELECT by id
     // If not found, return error response with HTTP 404
- $checkSql = "SELECT id FROM resources WHERE id = ?";
-    $checkStmt = $db->prepare($checkSql);
-    $checkStmt->execute([$resourceId]);
+ $check = $db->prepare("SELECT id FROM resources WHERE id = ?");
+    $check->execute([$resourceId]);
 
-    if ($checkStmt->rowCount() === 0) {
+    if ($check->rowCount() === 0) {
         http_response_code(404);
         sendResponse([
             'success' => false,
@@ -418,8 +441,7 @@ if (!$resourceId || !is_numeric($resourceId)) {
     }
     // TODO: Prepare DELETE query
     // DELETE FROM resources WHERE id = ?
-     $sql = "DELETE FROM resources WHERE id = ?";
-    $stmt = $db->prepare($sql);
+ $stmt = $db->prepare("DELETE FROM resources WHERE id = ?");
 
     // TODO: Bind $resourceId and execute
      $stmt->execute([$resourceId]);
@@ -475,12 +497,12 @@ if (!$resourceId || !is_numeric($resourceId)) {
     // FROM comments_resource
     // WHERE resource_id = ?
     // ORDER BY created_at ASC
-    $sql = "SELECT id, resource_id, author, text, created_at
-            FROM comments_resource
-            WHERE resource_id = ?
-            ORDER BY created_at ASC";
-
-    $stmt = $db->prepare($sql);
+   $stmt = $db->prepare(
+        "SELECT id, resource_id, author, text, created_at
+         FROM comments_resource
+         WHERE resource_id = ?
+         ORDER BY created_at ASC"
+    );
 
     // TODO: Bind $resourceId and execute
       $stmt->execute([$resourceId]);
@@ -545,11 +567,10 @@ function createComment($db, $data) {
 
     // TODO: Check that the resource exists in the resources table
     // If not found, return error response with HTTP 404
-    $checkSql = "SELECT id FROM resources WHERE id = ?";
-    $checkStmt = $db->prepare($checkSql);
-    $checkStmt->execute([$resourceId]);
+   $check = $db->prepare("SELECT id FROM resources WHERE id = ?");
+    $check->execute([$resourceId]);
 
-    if ($checkStmt->rowCount() === 0) {
+    if ($check->rowCount() === 0) {
         http_response_code(404);
         sendResponse([
             'success' => false,
@@ -564,8 +585,7 @@ function createComment($db, $data) {
 
     // TODO: Prepare INSERT query
     // INSERT INTO comments_resource (resource_id, author, text) VALUES (?, ?, ?)
-    $sql = "INSERT INTO comments_resource (resource_id, author, text) VALUES (?, ?, ?)";
-    $stmt = $db->prepare($sql);
+     $stmt = $db->prepare("INSERT INTO comments_resource (resource_id, author, text) VALUES (?, ?, ?)");
 
     // TODO: Bind resource_id, author, and text; then execute
     $stmt->execute([$resourceId, $author, $text]);
@@ -619,11 +639,10 @@ function deleteComment($db, $commentId) {
 
     // TODO: Check if the comment exists in comments_resource — SELECT by id
     // If not found, return error response with HTTP 404
-    $checkSql = "SELECT id FROM comments_resource WHERE id = ?";
-    $checkStmt = $db->prepare($checkSql);
-    $checkStmt->execute([$commentId]);
+  $check = $db->prepare("SELECT id FROM comments_resource WHERE id = ?");
+    $check->execute([$commentId]);
 
-    if ($checkStmt->rowCount() === 0) {
+    if ($check->rowCount() === 0) {
         http_response_code(404);
         sendResponse([
             'success' => false,
@@ -634,7 +653,7 @@ function deleteComment($db, $commentId) {
 
     // TODO: Prepare DELETE query
     // DELETE FROM comments_resource WHERE id = ?
-     $sql = "DELETE FROM comments_resource WHERE id = ?";
+     $stmt = $db->prepare("DELETE FROM comments_resource WHERE id = ?");
     $stmt = $db->prepare($sql);
 
 
@@ -670,8 +689,8 @@ try {
         // If action === 'comments', return all comments for a resource
         // TODO: Get resource_id from $_GET and call getCommentsByResourceId()
         if ($action === 'comments') {
-            $resourceId = $_GET['resource_id'] ?? null;
-            getCommentsByResourceId($db, $resourceId);
+            getCommentsByResourceId($db, $resource_id);
+        
         }
 
         // If 'id' is present in $_GET, return a single resource
@@ -714,13 +733,11 @@ try {
         // If action === 'delete_comment', delete a single comment
         // TODO: Get comment_id from $_GET and call deleteComment()
  if ($action === 'delete_comment') {
-            $commentId = $_GET['comment_id'] ?? null;
             deleteComment($db, $commentId);
         }
         // Otherwise, delete a resource
         // TODO: Get id from $_GET and call deleteResource()
          else {
-            $resourceId = $_GET['id'] ?? null;
             deleteResource($db, $resourceId);
         }
 
