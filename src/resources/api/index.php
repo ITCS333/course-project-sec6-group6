@@ -83,6 +83,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+$db = getDBConnection();
+
+$method      = $_SERVER['REQUEST_METHOD'];
+$rawData     = file_get_contents('php://input');
+$data        = json_decode($rawData, true);
+
+$action      = $_GET['action']      ?? null;
+$id          = $_GET['id']          ?? null;
+$resource_id = $_GET['resource_id'] ?? null;
+$comment_id  = $_GET['comment_id']  ?? null;
+
 
 // TODO: Include the database connection file
 // The Database class lives at src/resources/api/config/Database.php
