@@ -136,11 +136,7 @@ function deleteResource($db, $resourceId) {
     $stmt = $db->prepare("DELETE FROM resources WHERE id = ?");
     $stmt->execute([$resourceId]);
 
-    if ($stmt->rowCount() > 0) {
-        sendResponse(['success' => true, 'message' => 'Resource deleted successfully.']);
-    } else {
-        sendResponse(['success' => false, 'message' => 'Failed to delete resource.'], 500);
-    }
+    sendResponse(['success' => true, 'message' => 'Resource deleted successfully.']);
 }
 
 
@@ -196,7 +192,6 @@ function createComment($db, $data) {
     }
 }
 
-
 function deleteComment($db, $commentId) {
     if (!$commentId || !is_numeric($commentId)) {
         sendResponse(['success' => false, 'message' => 'Invalid comment ID.'], 400);
@@ -214,13 +209,8 @@ function deleteComment($db, $commentId) {
     $stmt = $db->prepare("DELETE FROM comments_resource WHERE id = ?");
     $stmt->execute([$commentId]);
 
-    if ($stmt->rowCount() > 0) {
-        sendResponse(['success' => true, 'message' => 'Comment deleted successfully.']);
-    } else {
-        sendResponse(['success' => false, 'message' => 'Failed to delete comment.'], 500);
-    }
+    sendResponse(['success' => true, 'message' => 'Comment deleted successfully.']);
 }
-
 
 try {
     if ($method === 'GET') {
