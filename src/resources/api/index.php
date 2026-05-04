@@ -128,7 +128,7 @@ function deleteResource($db, $resourceId) {
     $check = $db->prepare("SELECT id FROM resources WHERE id = ?");
     $check->execute([$resourceId]);
 
-    if ($check->rowCount() === 0) {
+    if ($check->!$check->fetch()) {
         sendResponse(['success' => false, 'message' => 'Resource not found.'], 404);
         return;
     }
@@ -174,7 +174,7 @@ function createComment($db, $data) {
     $check = $db->prepare("SELECT id FROM resources WHERE id = ?");
     $check->execute([$resourceId]);
 
-    if ($check->rowCount() === 0) {
+    if ($check->!$check->fetch()) {
         sendResponse(['success' => false, 'message' => 'Resource not found.'], 404);
         return;
     }
@@ -209,7 +209,7 @@ function deleteComment($db, $commentId) {
     $check = $db->prepare("SELECT id FROM comments_resource WHERE id = ?");
     $check->execute([$commentId]);
 
-    if ($check->rowCount() === 0) {
+    if ($check->!$check->fetch()) {
         sendResponse(['success' => false, 'message' => 'Comment not found.'], 404);
         return;
     }
