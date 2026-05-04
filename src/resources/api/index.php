@@ -30,7 +30,7 @@ function getAllResources($db) {
 
     $allowedSort = ['title', 'created_at'];
     $sort  = isset($_GET['sort']) && in_array($_GET['sort'], $allowedSort) ? $_GET['sort'] : 'created_at';
-    $order = (isset($_GET['order']) && strtolower($_GET['order']) === 'asc') ? 'ASC' : 'DESC';
+    $order = (isset($_GET['order']) && strtolower($_GET['order']) === 'desc') ? 'DESC' : 'ASC';
 
     $sql .= " ORDER BY $sort $order";
 
@@ -80,11 +80,11 @@ function createResource($db, $data) {
     $stmt = $db->prepare("INSERT INTO resources (title, description, link) VALUES (?, ?, ?)");
     $stmt->execute([$title, $description, $link]);
 
-    if ($stmt->rowCount() > 0) {
-        sendResponse(['success' => true, 'message' => 'Resource created successfully.', 'id' => $db->lastInsertId()], 201);
-    } else {
-        sendResponse(['success' => false, 'message' => 'Failed to create resource.'], 500);
-    }
+    sendResponse([
+        'success' => true,
+        'message' => 'Resource created successfully.',
+        'id'      => (int) $db->lastInsertId()
+    ], 201);
 }
 
 
@@ -185,12 +185,20 @@ function createComment($db, $data) {
     $stmt = $db->prepare("INSERT INTO comments_resource (resource_id, author, text) VALUES (?, ?, ?)");
     $stmt->execute([$resourceId, $author, $text]);
 
-    if ($stmt->rowCount() > 0) {
-        sendResponse(['success' => true, 'message' => 'Comment added successfully.', 'id' => $db->lastInsertId()], 201);
-    } else {
-        sendResponse(['success' => false, 'message' => 'Failed to add comment.'], 500);
-    }
+    sendResponse([
+        'success' => true,
+        'message' => 'Comment added successfully.',
+        'id'      => (int) $db->lastInsertId(),
+        'data'    => [
+            'id'          => (int) $db->lastInsertId(),
+            'resource_id' => (int) $resourceId,
+            'author'      => $author,
+            'text'        => $text,
+            'created_at'  => date('Y-m-d H:i:s'),
+        ]
+    ], 201);
 }
+
 
 function deleteComment($db, $commentId) {
     if (!$commentId || !is_numeric($commentId)) {
@@ -211,6 +219,7 @@ function deleteComment($db, $commentId) {
 
     sendResponse(['success' => true, 'message' => 'Comment deleted successfully.']);
 }
+
 
 try {
     if ($method === 'GET') {
