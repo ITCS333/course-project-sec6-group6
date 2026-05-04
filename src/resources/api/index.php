@@ -361,6 +361,7 @@ function updateResource($db, $data) {
         ]);
         return;
     }
+}
 
     // TODO: Check if the resource exists — SELECT by id
     // If not found, return error response with HTTP 404
