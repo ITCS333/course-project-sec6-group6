@@ -56,9 +56,9 @@ function createResourceRow({ id, title, description, link }) {
  * 3. For each resource, call `createResourceRow()` and
  *    append the returned <tr> to the table body.
  */
-function renderTable() {
+function renderTable(data = resources) {
   tbody.innerHTML = '';
-  resources.forEach(resource => {
+  data.forEach(resource => {
     tbody.appendChild(createResourceRow(resource));
   });
 }
