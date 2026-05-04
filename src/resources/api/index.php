@@ -46,8 +46,7 @@ function getAllResources($db) {
 
 function getResourceById($db, $resourceId) {
     if (!$resourceId || !is_numeric($resourceId)) {
-        http_response_code(400);
-        sendResponse(['success' => false, 'message' => 'Invalid resource ID.']);
+        sendResponse(['success' => false, 'message' => 'Invalid resource ID.'], 400);
         return;
     }
 
@@ -58,16 +57,14 @@ function getResourceById($db, $resourceId) {
     if ($resource) {
         sendResponse(['success' => true, 'data' => $resource]);
     } else {
-        http_response_code(404);
-        sendResponse(['success' => false, 'message' => 'Resource not found.']);
+        sendResponse(['success' => false, 'message' => 'Resource not found.'], 404);
     }
 }
 
 
 function createResource($db, $data) {
     if (empty($data['title']) || empty($data['link'])) {
-        http_response_code(400);
-        sendResponse(['success' => false, 'message' => 'Title and link are required.']);
+        sendResponse(['success' => false, 'message' => 'Title and link are required.'], 400);
         return;
     }
 
@@ -76,8 +73,7 @@ function createResource($db, $data) {
     $link        = trim($data['link']);
 
     if (!filter_var($link, FILTER_VALIDATE_URL)) {
-        http_response_code(400);
-        sendResponse(['success' => false, 'message' => 'Invalid URL.']);
+        sendResponse(['success' => false, 'message' => 'Invalid URL.'], 400);
         return;
     }
 
@@ -85,19 +81,16 @@ function createResource($db, $data) {
     $stmt->execute([$title, $description, $link]);
 
     if ($stmt->rowCount() > 0) {
-        http_response_code(201);
-        sendResponse(['success' => true, 'message' => 'Resource created successfully.', 'id' => $db->lastInsertId()]);
+        sendResponse(['success' => true, 'message' => 'Resource created successfully.', 'id' => $db->lastInsertId()], 201);
     } else {
-        http_response_code(500);
-        sendResponse(['success' => false, 'message' => 'Failed to create resource.']);
+        sendResponse(['success' => false, 'message' => 'Failed to create resource.'], 500);
     }
 }
 
 
 function updateResource($db, $data) {
     if (empty($data['id'])) {
-        http_response_code(400);
-        sendResponse(['success' => false, 'message' => 'Resource ID is required.']);
+        sendResponse(['success' => false, 'message' => 'Resource ID is required.'], 400);
         return;
     }
 
@@ -106,8 +99,7 @@ function updateResource($db, $data) {
     $existing = $check->fetch(PDO::FETCH_ASSOC);
 
     if (!$existing) {
-        http_response_code(404);
-        sendResponse(['success' => false, 'message' => 'Resource not found.']);
+        sendResponse(['success' => false, 'message' => 'Resource not found.'], 404);
         return;
     }
 
@@ -116,8 +108,7 @@ function updateResource($db, $data) {
     $link        = isset($data['link'])        ? trim($data['link'])        : $existing['link'];
 
     if (!filter_var($link, FILTER_VALIDATE_URL)) {
-        http_response_code(400);
-        sendResponse(['success' => false, 'message' => 'Invalid URL.']);
+        sendResponse(['success' => false, 'message' => 'Invalid URL.'], 400);
         return;
     }
 
@@ -130,8 +121,7 @@ function updateResource($db, $data) {
 
 function deleteResource($db, $resourceId) {
     if (!$resourceId || !is_numeric($resourceId)) {
-        http_response_code(400);
-        sendResponse(['success' => false, 'message' => 'Invalid resource ID.']);
+        sendResponse(['success' => false, 'message' => 'Invalid resource ID.'], 400);
         return;
     }
 
@@ -139,8 +129,7 @@ function deleteResource($db, $resourceId) {
     $check->execute([$resourceId]);
 
     if ($check->rowCount() === 0) {
-        http_response_code(404);
-        sendResponse(['success' => false, 'message' => 'Resource not found.']);
+        sendResponse(['success' => false, 'message' => 'Resource not found.'], 404);
         return;
     }
 
@@ -150,16 +139,14 @@ function deleteResource($db, $resourceId) {
     if ($stmt->rowCount() > 0) {
         sendResponse(['success' => true, 'message' => 'Resource deleted successfully.']);
     } else {
-        http_response_code(500);
-        sendResponse(['success' => false, 'message' => 'Failed to delete resource.']);
+        sendResponse(['success' => false, 'message' => 'Failed to delete resource.'], 500);
     }
 }
 
 
 function getCommentsByResourceId($db, $resourceId) {
     if (!$resourceId || !is_numeric($resourceId)) {
-        http_response_code(400);
-        sendResponse(['success' => false, 'message' => 'Invalid resource ID.']);
+        sendResponse(['success' => false, 'message' => 'Invalid resource ID.'], 400);
         return;
     }
 
@@ -177,16 +164,14 @@ function getCommentsByResourceId($db, $resourceId) {
 
 function createComment($db, $data) {
     if (empty($data['resource_id']) || empty($data['author']) || empty($data['text'])) {
-        http_response_code(400);
-        sendResponse(['success' => false, 'message' => 'All fields are required.']);
+        sendResponse(['success' => false, 'message' => 'All fields are required.'], 400);
         return;
     }
 
     $resourceId = $data['resource_id'];
 
     if (!is_numeric($resourceId)) {
-        http_response_code(400);
-        sendResponse(['success' => false, 'message' => 'Invalid resource ID.']);
+        sendResponse(['success' => false, 'message' => 'Invalid resource ID.'], 400);
         return;
     }
 
@@ -194,8 +179,7 @@ function createComment($db, $data) {
     $check->execute([$resourceId]);
 
     if ($check->rowCount() === 0) {
-        http_response_code(404);
-        sendResponse(['success' => false, 'message' => 'Resource not found.']);
+        sendResponse(['success' => false, 'message' => 'Resource not found.'], 404);
         return;
     }
 
@@ -206,19 +190,16 @@ function createComment($db, $data) {
     $stmt->execute([$resourceId, $author, $text]);
 
     if ($stmt->rowCount() > 0) {
-        http_response_code(201);
-        sendResponse(['success' => true, 'message' => 'Comment added successfully.', 'id' => $db->lastInsertId()]);
+        sendResponse(['success' => true, 'message' => 'Comment added successfully.', 'id' => $db->lastInsertId()], 201);
     } else {
-        http_response_code(500);
-        sendResponse(['success' => false, 'message' => 'Failed to add comment.']);
+        sendResponse(['success' => false, 'message' => 'Failed to add comment.'], 500);
     }
 }
 
 
 function deleteComment($db, $commentId) {
     if (!$commentId || !is_numeric($commentId)) {
-        http_response_code(400);
-        sendResponse(['success' => false, 'message' => 'Invalid comment ID.']);
+        sendResponse(['success' => false, 'message' => 'Invalid comment ID.'], 400);
         return;
     }
 
@@ -226,8 +207,7 @@ function deleteComment($db, $commentId) {
     $check->execute([$commentId]);
 
     if ($check->rowCount() === 0) {
-        http_response_code(404);
-        sendResponse(['success' => false, 'message' => 'Comment not found.']);
+        sendResponse(['success' => false, 'message' => 'Comment not found.'], 404);
         return;
     }
 
@@ -237,13 +217,11 @@ function deleteComment($db, $commentId) {
     if ($stmt->rowCount() > 0) {
         sendResponse(['success' => true, 'message' => 'Comment deleted successfully.']);
     } else {
-        http_response_code(500);
-        sendResponse(['success' => false, 'message' => 'Failed to delete comment.']);
+        sendResponse(['success' => false, 'message' => 'Failed to delete comment.'], 500);
     }
 }
 
 
-// ROUTER
 try {
     if ($method === 'GET') {
         if ($action === 'comments') {
@@ -268,25 +246,19 @@ try {
             deleteResource($db, $id);
         }
     } else {
-        http_response_code(405);
-        sendResponse(['success' => false, 'message' => 'Method not allowed.']);
+        sendResponse(['success' => false, 'message' => 'Method not allowed.'], 405);
     }
 } catch (PDOException $e) {
     error_log($e->getMessage());
-    http_response_code(500);
-    sendResponse(['success' => false, 'message' => 'Database error.']);
+    sendResponse(['success' => false, 'message' => 'Database error.'], 500);
 } catch (Exception $e) {
     error_log($e->getMessage());
-    http_response_code(500);
-    sendResponse(['success' => false, 'message' => 'Server error.']);
+    sendResponse(['success' => false, 'message' => 'Server error.'], 500);
 }
 
 
 function sendResponse($data, $statusCode = 200) {
     http_response_code($statusCode);
-    if (!is_array($data)) {
-        $data = ['data' => $data];
-    }
     echo json_encode($data);
     exit;
 }
