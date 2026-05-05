@@ -1,7 +1,5 @@
  <?php
-require_once __DIR__ . '/../../common/db.php';
-
-$db = getDBConnection();
+ 
 /**
  * Weekly Course Breakdown API
  *
@@ -185,7 +183,7 @@ try {
         $stmt->execute([$_GET['id']]);
 
         sendJson(["success" => true]);
-    
+    }
 
     sendJson(["success" => false, "message" => "Method not allowed"], 405);
 
