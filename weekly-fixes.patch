@@ -1,0 +1,254 @@
+diff --git a/src/weekly/admin.html b/src/weekly/admin.html
+index 0316c24..6b52902 100644
+--- a/src/weekly/admin.html
++++ b/src/weekly/admin.html
+@@ -14,40 +14,38 @@
+ 
+ <main>
+ 
+-    <!-- Add / Edit Week -->
+     <section>
+-        <h2 id="form-title">Add a New Week</h2>
++        <h2>Add a New Week</h2>
+ 
+-        <form id="week-form">
++        <form id="week-form" action="#">
+             <fieldset>
+                 <legend>Weekly Details</legend>
+ 
+-                <label>Week Title</label>
+-                <input id="week-title" type="text" required>
++                <label for="week-title">Week Title</label>
++                <input id="week-title" type="text" required placeholder="Week 1: Introduction to HTML">
+ 
+-                <label>Start Date</label>
++                <label for="week-start-date">Start Date</label>
+                 <input id="week-start-date" type="date" required>
+ 
+-                <label>Description</label>
+-                <textarea id="week-description"></textarea>
++                <label for="week-description">Description</label>
++                <textarea id="week-description" rows="5"></textarea>
+ 
+-                <label>Resource Links</label>
+-                <textarea id="week-links"></textarea>
++                <label for="week-links">Resource Links (one per line)</label>
++                <textarea id="week-links" rows="3"></textarea>
+ 
+-                <button type="submit" id="submit-btn">Add Week</button>
++                <button id="add-week" type="submit">Add Week</button>
+             </fieldset>
+         </form>
+     </section>
+ 
+-    <!-- Table -->
+     <section>
+         <h2>Current Weekly Breakdown</h2>
+ 
+-        <table border="1">
++        <table id="weeks-table">
+             <thead>
+                 <tr>
+-                    <th>Title</th>
+-                    <th>Date</th>
++                    <th>Week Title</th>
++                    <th>Start Date</th>
+                     <th>Description</th>
+                     <th>Actions</th>
+                 </tr>
+diff --git a/src/weekly/api/index.php b/src/weekly/api/index.php
+index 37996cc..3350e3d 100644
+--- a/src/weekly/api/index.php
++++ b/src/weekly/api/index.php
+@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+ }
+ 
+ // Include the shared database connection file.
+-require_once __DIR__ . '/../common/db.php';
++require_once __DIR__ . '/../../common/db.php';
+ 
+ // Get the PDO database connection.
+ $db = getDBConnection();
+diff --git a/src/weekly/details.js b/src/weekly/details.js
+index 81ff3a4..04eae5d 100644
+--- a/src/weekly/details.js
++++ b/src/weekly/details.js
+@@ -70,7 +70,8 @@ function renderWeekDetails(week) {
+   weekDescription.textContent = week.description;
+ 
+   weekLinksList.innerHTML = '';
+-  for (const url of week.links) {
++  const links = week.links || [];
++  for (const url of links) {
+     const li = document.createElement('li');
+     const a  = document.createElement('a');
+     a.href        = url;
+diff --git a/src/weekly/list.html b/src/weekly/list.html
+index 3fe7f09..ba46dd5 100644
+--- a/src/weekly/list.html
++++ b/src/weekly/list.html
+@@ -1,51 +1,21 @@
+-<!--
+-  Requirement: Create the Student View for the Weekly Breakdown
+-
+-  Instructions:
+-  This page is a read-only view for students to see the plan for all weeks.
+-  Each week should link to its dedicated detail page.
+--->
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+-    <!-- TODO: Add meta tags for charset (UTF-8) and viewport
+-         (width=device-width, initial-scale=1.0). -->
+-
+-    <!-- TODO: Add a <title>, e.g., "Weekly Course Breakdown". -->
+-
+-    <!-- TODO: Link to your CSS framework or stylesheet. -->
+-
+-    <!-- Required: link list.js with defer so the DOM is ready before the
+-         script runs. -->
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>Weekly Course Breakdown</title>
+     <script src="list.js" defer></script>
+ </head>
+ <body>
+ 
+-    <!-- TODO: Create a <header> containing an <h1> "Weekly Course Breakdown". -->
+-
+-    <!-- TODO: Create the <main> content area. -->
+-
+-        <!-- TODO: Create a <section id="week-list-section"> to contain the
+-             list of week articles. The id is required by list.js. -->
+-
+-            <!-- list.js will inject one <article> per week here.
+-                 Each article follows the structure below. -->
+-
+-            <!-- Example Week Article Structure (do NOT hardcode real data;
+-                 list.js fetches it from the API):
+-
+-            <article>
+-                <h2>Week 1: Introduction to HTML</h2>
+-                <p>Starts on: 2025-01-13</p>
+-                <p>Learn HTML fundamentals...</p>
+-                <a href="details.html?id=1">View Details & Discussion</a>
+-            </article>
+-
+-            Note: the href MUST be "details.html?id=<id>" so that
+-            details.js can read the id from the URL query string. -->
++    <header>
++        <h1>Weekly Course Breakdown</h1>
++    </header>
+ 
+-        <!-- End of #week-list-section -->
+-    <!-- End of <main> -->
++    <main>
++        <section id="week-list-section">
++        </section>
++    </main>
+ 
+ </body>
+ </html>
+diff --git a/src/weekly/list.js b/src/weekly/list.js
+index e751772..140f2e7 100644
+--- a/src/weekly/list.js
++++ b/src/weekly/list.js
+@@ -1,66 +1,44 @@
+-/*
+-  Requirement: Populate the "Weekly Course Breakdown" list page.
++const weekListSection = document.getElementById('week-list-section');
+ 
+-  Instructions:
+-  1. This file is already linked to `list.html` via:
+-         <script src="list.js" defer></script>
++function createWeekArticle(week) {
++  const article = document.createElement('article');
+ 
+-  2. In `list.html`, the <section id="week-list-section"> is the container
+-     that this script populates.
++  const h2 = document.createElement('h2');
++  h2.textContent = week.title;
++  article.appendChild(h2);
+ 
+-  3. Implement the TODOs below.
+-*/
++  const datePara = document.createElement('p');
++  datePara.textContent = 'Starts on: ' + week.start_date;
++  article.appendChild(datePara);
+ 
+-// --- Element Selections ---
+-// TODO: Select the section for the week list using its id 'week-list-section'.
++  const descPara = document.createElement('p');
++  descPara.textContent = week.description;
++  article.appendChild(descPara);
+ 
+-// --- Functions ---
++  const link = document.createElement('a');
++  link.href = 'details.html?id=' + week.id;
++  link.textContent = 'View Details & Discussion';
++  article.appendChild(link);
+ 
+-/**
+- * TODO: Implement createWeekArticle.
+- *
+- * Parameters:
+- *   week — one object from the API response with the shape:
+- *     {
+- *       id:          number,   // integer primary key from the weeks table
+- *       title:       string,
+- *       start_date:  string,   // "YYYY-MM-DD" — matches the SQL column name
+- *       description: string,
+- *       links:       string[]  // already decoded array of URL strings
+- *     }
+- *
+- * Returns:
+- *   An <article> element matching the structure shown in list.html:
+- *     <article>
+- *       <h2>{title}</h2>
+- *       <p>Starts on: {start_date}</p>
+- *       <p>{description}</p>
+- *       <a href="details.html?id={id}">View Details & Discussion</a>
+- *     </article>
+- *
+- * Important: the href MUST be "details.html?id=<id>" (integer id from
+- * the weeks table) so that details.js can read the id from the URL.
+- */
+-function createWeekArticle(week) {
+-  // ... your implementation here ...
++  return article;
+ }
+ 
+-/**
+- * TODO: Implement loadWeeks (async).
+- *
+- * It should:
+- * 1. Use fetch() to GET data from './api/index.php'.
+- *    The API returns JSON in the shape:
+- *      { success: true, data: [ ...week objects ] }
+- * 2. Parse the JSON response.
+- * 3. Clear any existing content from the list section.
+- * 4. Loop through the data array. For each week object:
+- *    - Call createWeekArticle(week).
+- *    - Append the returned <article> to the list section.
+- */
+ async function loadWeeks() {
+-  // ... your implementation here ...
++  try {
++    const response = await fetch('./api/index.php');
++    const result = await response.json();
++
++    weekListSection.innerHTML = '';
++
++    if (result.success && result.data) {
++      result.data.forEach(function(week) {
++        const article = createWeekArticle(week);
++        weekListSection.appendChild(article);
++      });
++    }
++  } catch (error) {
++    console.error('Error loading weeks:', error);
++  }
+ }
+ 
+-// --- Initial Page Load ---
+ loadWeeks();
