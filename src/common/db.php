@@ -13,10 +13,11 @@ if (!function_exists('getDBConnection')) {
         static $pdo = null;
 
         if ($pdo === null) {
-            $host = '127.0.0.1';
-            $db   = 'test';
-            $user = 'root';
-            $pass = '';
+            $host = 'localhost';
+            $db   = 'course';
+            $user = 'admin';
+            $pass = 'password123';
+            
 
 
             $dsn = "mysql:host={$host};dbname={$db};charset=utf8mb4";
