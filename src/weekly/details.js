@@ -1,4 +1,4 @@
-/*
+ /*
   Requirement: Populate the weekly detail page and handle the discussion forum.
 
   Instructions:
@@ -70,8 +70,7 @@ function renderWeekDetails(week) {
   weekDescription.textContent = week.description;
 
   weekLinksList.innerHTML = '';
-  const links = week.links || [];
-  for (const url of links) {
+  for (const url of week.links) {
     const li = document.createElement('li');
     const a  = document.createElement('a');
     a.href        = url;

@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/../common/db.php';
+
+$db = getDbConnection();
 /**
  * Weekly Course Breakdown API
  *
