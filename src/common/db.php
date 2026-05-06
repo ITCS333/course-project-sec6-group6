@@ -17,6 +17,8 @@ if (!function_exists('getDBConnection')) {
             $db   = 'course';
             $user = 'admin';
             $pass = 'password123';
+            
+
 
             $dsn = "mysql:host={$host};dbname={$db};charset=utf8mb4";
 

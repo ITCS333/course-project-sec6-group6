@@ -94,8 +94,10 @@ async function handleAddWeek(event) {
   const start_date = document.getElementById('week-start-date').value;
   const description = document.getElementById('week-description').value;
   const linksRaw = document.getElementById('week-links').value;
-  const links = linksRaw.split('\n').filter(line => line.trim() !== '');
-
+   const links = linksRaw
+  .split('\n')
+  .map(line => line.trim())
+  .filter(line => line !== '');
   const submitBtn = document.getElementById('add-week');
   const editId = submitBtn.dataset.editId;
 
