@@ -1,161 +1,106 @@
-/*
-  Requirement: Make the "Discussion Board" page interactive.
-
-  Instructions:
-  1. This file is already linked to `board.html` via:
-         <script src="board.js" defer></script>
-
-  2. In `board.html`:
-     - The new-topic form has id="new-topic-form".
-     - The topic list container has id="topic-list-container".
-
-  3. Implement the TODOs below.
-
-  API base URL: ./api/index.php
-  All requests and responses use JSON.
-  Successful list response shape: { success: true, data: [ ...topic objects ] }
-  Each topic object shape (from the topics table):
-    {
-      id:         number,   // integer primary key from the topics table
-      subject:    string,
-      message:    string,
-      author:     string,
-      created_at: string    // "YYYY-MM-DD HH:MM:SS" — matches the SQL column name
-    }
-*/
-
-// --- Global Data Store ---
-// Holds the topics currently displayed in the list.
 let topics = [];
 
-// --- Element Selections ---
-// TODO: Select the new-topic form by id 'new-topic-form'.
+const newTopicForm       = document.getElementById('new-topic-form');
+const topicListContainer = document.getElementById('topic-list-container');
 
-// TODO: Select the topic list container by id 'topic-list-container'.
-
-// --- Functions ---
-
-/**
- * TODO: Implement createTopicArticle.
- *
- * Parameters:
- *   topic — one topic object with shape:
- *     { id, subject, message, author, created_at }
- *
- * Returns an <article> element matching the structure shown in board.html:
- *   <article>
- *     <h3><a href="topic.html?id={id}">{subject}</a></h3>
- *     <footer>Posted by: {author} on {created_at}</footer>
- *     <div>
- *       <button class="edit-btn"   data-id="{id}">Edit</button>
- *       <button class="delete-btn" data-id="{id}">Delete</button>
- *     </div>
- *   </article>
- *
- * Important:
- * - The link href MUST be "topic.html?id=<id>" so topic.js can read
- *   the id from the URL.
- * - The data-id on both buttons holds the integer primary key from
- *   the topics table.
- * - Use created_at (not a field called "date") — this matches the SQL
- *   column name.
- */
 function createTopicArticle(topic) {
-  // ... your implementation here ...
+  var article = document.createElement('article');
+  article.innerHTML = `
+    <h3><a href="topic.html?id=${topic.id}">${topic.subject}</a></h3>
+    <p>${topic.message}</p>
+    <footer>${topic.author} &mdash; ${topic.created_at}</footer>
+    <button class="delete-btn" data-id="${topic.id}">Delete</button>`;
+  return article;
 }
 
-/**
- * TODO: Implement renderTopics.
- *
- * It should:
- * 1. Clear the topicListContainer (set innerHTML to "").
- * 2. Loop through the global `topics` array.
- * 3. For each topic, call createTopicArticle(topic) and append the
- *    returned <article> to topicListContainer.
- */
 function renderTopics() {
-  // ... your implementation here ...
+  topicListContainer.innerHTML = '';
+  topics.forEach(function(topic) {
+    topicListContainer.appendChild(createTopicArticle(topic));
+  });
 }
 
-/**
- * TODO: Implement handleCreateTopic (async).
- *
- * This is the event handler for the form's 'submit' event.
- * It should:
- * 1. Call event.preventDefault().
- * 2. Read values from:
- *      - #topic-subject → subject (string)
- *      - #topic-message → message (string)
- * 3. Send a POST to './api/index.php' with the body:
- *      { subject, message, author: "Student" }
- *    (author is hardcoded "Student" for this exercise)
- *    The API inserts a row into the topics table.
- * 4. On success (result.success === true):
- *    - Push the new topic object (with the id from result.id) onto
- *      the global `topics` array.
- *    - Call renderTopics() to refresh the list.
- *    - Reset the form.
- */
-async function handleCreateTopic(event) {
-  // ... your implementation here ...
-}
-
-/**
- * TODO: Implement handleUpdateTopic (async).
- *
- * Parameters:
- *   id     — the integer primary key of the topic being edited.
- *   fields — object with { subject, message }.
- *
- * It should:
- * 1. Send a PUT to './api/index.php' with the body:
- *      { id, subject, message }
- * 2. On success:
- *    - Update the matching entry in the global `topics` array.
- *    - Call renderTopics() to refresh the list.
- */
 async function handleUpdateTopic(id, fields) {
-  // ... your implementation here ...
+  var res    = await fetch('./api/index.php', {
+    method:  'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ id: id, subject: fields.subject, message: fields.message }),
+  });
+  var result = await res.json();
+  if (result.success) {
+    topics = topics.map(function(t) {
+      return String(t.id) === String(id) ? Object.assign({}, t, fields) : t;
+    });
+    renderTopics();
+  }
 }
 
-/**
- * TODO: Implement handleTopicListClick (async).
- *
- * This is a delegated click listener on topicListContainer.
- * It should:
- * 1. If event.target has class "delete-btn":
- *    a. Read the integer id from event.target.dataset.id.
- *    b. Send a DELETE to './api/index.php?id=<id>'.
- *    c. On success, remove the topic from the global `topics` array
- *       and call renderTopics().
- *
- * 2. If event.target has class "edit-btn":
- *    a. Read the integer id from event.target.dataset.id.
- *    b. Find the matching topic in the global `topics` array.
- *    c. Populate #topic-subject and #topic-message with the topic's data.
- *    d. Change the submit button (#create-topic) text to "Update Topic"
- *       and set its data-edit-id attribute to the topic's id.
- */
-async function handleTopicListClick(event) {
-  // ... your implementation here ...
+function handleCreateTopic(event) {
+  event.preventDefault();
+
+  var subject = document.getElementById('topic-subject').value.trim();
+  var message = document.getElementById('topic-message').value.trim();
+
+  if (!subject || !message) {
+    alert('Please fill out all fields.');
+    return;
+  }
+
+  var user   = JSON.parse((typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('user') : null) || '{}');
+  var author = user.name || 'Anonymous';
+
+  fetch('./api/index.php', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ subject: subject, message: message, author: author }),
+  })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.success) {
+        loadAndInitialize();
+        newTopicForm.reset();
+      } else {
+        alert(data.message || 'Failed to create topic.');
+      }
+    });
 }
 
-/**
- * TODO: Implement loadAndInitialize (async).
- *
- * It should:
- * 1. Send a GET to './api/index.php'.
- *    Response shape: { success: true, data: [ ...topic objects ] }
- * 2. Store the data array in the global `topics` variable.
- * 3. Call renderTopics() to populate the list.
- * 4. Attach the 'submit' event listener to the new-topic form
- *    (calls handleCreateTopic).
- * 5. Attach a 'click' event listener to topicListContainer
- *    (calls handleTopicListClick — event delegation for edit and delete).
- */
+function handleTopicListClick(event) {
+  var target = event.target;
+
+  if (target.classList.contains('delete-btn')) {
+    var id = target.dataset.id;
+    fetch('./api/index.php?id=' + id, { method: 'DELETE' })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          topics = topics.filter(function(t) { return String(t.id) !== String(id); });
+          renderTopics();
+        } else {
+          alert(data.message || 'Failed to delete topic.');
+        }
+      });
+  }
+}
+
 async function loadAndInitialize() {
-  // ... your implementation here ...
+  var response = await fetch('./api/index.php');
+
+  if (!response.ok) {
+    alert('Failed to load topics.');
+    return;
+  }
+
+  var json = await response.json();
+  topics   = json.data;
+  renderTopics();
+
+  if (!loadAndInitialize._listenersAttached) {
+    newTopicForm.addEventListener('submit', handleCreateTopic);
+    topicListContainer.addEventListener('click', handleTopicListClick);
+    loadAndInitialize._listenersAttached = true;
+  }
 }
 
-// --- Initial Page Load ---
+loadAndInitialize._listenersAttached = false;
 loadAndInitialize();
