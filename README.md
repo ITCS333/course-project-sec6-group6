@@ -25,7 +25,7 @@ The website covers five functional areas, each assigned to one team member.
 | 2 | Course Resources | | |
 | 3 | Weekly Breakdown |202302468 | fatema-17|
 | 4 | Assignments |202305366 |Halaalzayani1 |
-| 5 | Discussion Board | | |
+| 5 | Discussion Board |202100476 |Danah-Mk |
 
 ---
 
