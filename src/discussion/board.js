@@ -1,7 +1,7 @@
 let topics = [];
 
-const newTopicForm       = document.getElementById('new-topic-form');
-const topicListContainer = document.getElementById('topic-list-container');
+let newTopicForm;
+let topicListContainer;
 
 function createTopicArticle(topic) {
   var article = document.createElement('article');
@@ -84,6 +84,9 @@ function handleTopicListClick(event) {
 }
 
 async function loadAndInitialize() {
+  newTopicForm      = document.getElementById('new-topic-form');
+  topicListContainer = document.getElementById('topic-list-container');
+
   var response = await fetch('./api/index.php');
 
   if (!response.ok) {
