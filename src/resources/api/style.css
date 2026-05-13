@@ -1,0 +1,113 @@
+nav a {
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  margin-left: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+ 
+nav a:hover { color: white; }
+ 
+/* --- Main Content --- */
+main {
+  max-width: 960px;
+  margin: 40px auto;
+  padding: 0 24px;
+}
+ 
+h1 { font-size: 1.8rem; color: #1a3557; margin-bottom: 8px; }
+h2 { font-size: 1.3rem; color: #1a3557; margin-bottom: 8px; }
+h3 { font-size: 1.1rem; color: #1a3557; margin-bottom: 6px; }
+ 
+p  { color: #444; margin-bottom: 12px; }
+ 
+/* --- Card --- */
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 16px;
+  border: 1px solid #e0e0e0;
+}
+ 
+/* --- Button --- */
+.btn {
+  display: inline-block;
+  padding: 10px 22px;
+  background: #1a3557;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+ 
+.btn:hover { background: #234a7a; }
+ 
+.btn-outline {
+  background: white;
+  color: #1a3557;
+  border: 2px solid #1a3557;
+}
+ 
+.btn-outline:hover { background: #1a3557; color: white; }
+ 
+/* --- Form --- */
+label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #333;
+}
+ 
+input, select, textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  margin-bottom: 16px;
+  outline: none;
+  background: white;
+}
+ 
+input:focus, select:focus, textarea:focus {
+  border-color: #1a3557;
+}
+ 
+/* --- Table --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+ 
+thead { background: #1a3557; color: white; }
+th { padding: 12px 16px; text-align: left; font-size: 0.88rem; }
+td { padding: 12px 16px; border-bottom: 1px solid #eee; font-size: 0.93rem; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f9f9f9; }
+ 
+/* --- Footer --- */
+footer {
+  text-align: center;
+  padding: 24px;
+  color: #888;
+  font-size: 0.85rem;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 60px;
+}
+ 
+/* --- Responsive --- */
+@media (max-width: 600px) {
+  header { padding: 12px 16px; flex-direction: column; gap: 10px; }
+  main   { padding: 0 16px; margin: 24px auto; }
+}
