@@ -13,7 +13,7 @@ The website covers five functional areas, each assigned to one team member.
 
 ## Live Demo
 
-> **Replit Deployment:** Update this link with your Replit deployment URL once the project is live.
+> **Replit Deployment:** [Link For Replit](https://course-project-sec-6-group-6--DanahMk.replit.app).
 
 ---
 
@@ -21,11 +21,11 @@ The website covers five functional areas, each assigned to one team member.
 
 | Task | Description | Student ID | GitHub Username |
 |------|-------------|------------|-----------------|
-| 1 | Home Page, Authentication & User Management | | |
-| 2 | Course Resources | | |
-| 3 | Weekly Breakdown | | |
-| 4 | Assignments | | |
-| 5 | Discussion Board | | |
+| 1 | Home Page, Authentication & User Management |202106563 |SaeedaAlansary |
+| 2 | Course Resources | 202307593| fatemahakeem-cmyk |
+| 3 | Weekly Breakdown |202302468 | fatema-17|
+| 4 | Assignments |202305366 |Halaalzayani1 |
+| 5 | Discussion Board |202100476 |Danah-Mk |
 
 ---
 

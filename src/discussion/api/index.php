@@ -1,408 +1,222 @@
 <?php
-/**
- * Discussion Board API
- *
- * RESTful API for CRUD operations on discussion topics and their replies.
- * Uses PDO to interact with the MySQL database defined in schema.sql.
- *
- * Database Tables (ground truth: schema.sql):
- *
- * Table: topics
- *   id         INT UNSIGNED  PRIMARY KEY AUTO_INCREMENT
- *   subject    VARCHAR(255)  NOT NULL
- *   message    TEXT          NOT NULL
- *   author     VARCHAR(100)  NOT NULL
- *   created_at TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
- *
- * Table: replies
- *   id         INT UNSIGNED  PRIMARY KEY AUTO_INCREMENT
- *   topic_id   INT UNSIGNED  NOT NULL — FK → topics.id (ON DELETE CASCADE)
- *   text       TEXT          NOT NULL
- *   author     VARCHAR(100)  NOT NULL
- *   created_at TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
- *
- * HTTP Methods Supported:
- *   GET    — Retrieve topic(s) or replies
- *   POST   — Create a new topic or reply
- *   PUT    — Update an existing topic
- *   DELETE — Delete a topic (cascade removes its replies) or a reply
- *
- * URL scheme (all requests go to index.php):
- *
- *   Topics:
- *     GET    ./api/index.php                  — list all topics
- *     GET    ./api/index.php?id={id}           — get one topic by integer id
- *     POST   ./api/index.php                  — create a new topic
- *     PUT    ./api/index.php                  — update a topic (id in JSON body)
- *     DELETE ./api/index.php?id={id}           — delete a topic
- *
- *   Replies (action parameter selects the replies sub-resource):
- *     GET    ./api/index.php?action=replies&topic_id={id}
- *                                             — list replies for a topic
- *     POST   ./api/index.php?action=reply     — create a reply
- *     DELETE ./api/index.php?action=delete_reply&id={id}
- *                                             — delete a single reply
- *
- * Query parameters for GET all topics:
- *   search — filter rows where subject LIKE or message LIKE or author LIKE
- *   sort   — column to sort by; allowed: subject, author, created_at
- *            (default: created_at)
- *   order  — sort direction; allowed: asc, desc (default: desc)
- *
- * Response format: JSON
- *   Success: { "success": true,  "data": ... }
- *   Error:   { "success": false, "message": "..." }
- */
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-// ============================================================================
-// HEADERS AND INITIALIZATION
-// ============================================================================
-
-// TODO: Set headers for JSON response and CORS.
-// Set Content-Type to application/json.
-// Allow cross-origin requests (CORS) if needed.
-// Allow HTTP methods: GET, POST, PUT, DELETE, OPTIONS.
-// Allow headers: Content-Type, Authorization.
-
-
-// TODO: Handle preflight OPTIONS request.
-// If the request method is OPTIONS, return HTTP 200 and exit.
-
-
-// TODO: Include the shared database connection file.
-// require_once __DIR__ . '/../../common/db.php';
-
-
-// TODO: Get the PDO database connection.
-// $db = getDBConnection();
-
-
-// TODO: Read the HTTP request method.
-// $method = $_SERVER['REQUEST_METHOD'];
-
-
-// TODO: Read and decode the request body for POST and PUT requests.
-// $rawData = file_get_contents('php://input');
-// $data    = json_decode($rawData, true) ?? [];
-
-
-// TODO: Read query parameters.
-// $action  = $_GET['action']   ?? null;  // 'replies', 'reply', 'delete_reply'
-// $id      = $_GET['id']       ?? null;  // integer topic or reply id
-// $topicId = $_GET['topic_id'] ?? null;  // integer topic id for replies queries
-
-
-// ============================================================================
-// TOPICS FUNCTIONS
-// ============================================================================
-
-/**
- * Get all topics (with optional search and sort).
- * Method: GET (no ?id or ?action parameter).
- *
- * Query parameters handled inside:
- *   search — filter by subject LIKE or message LIKE or author LIKE
- *   sort   — allowed: subject, author, created_at   (default: created_at)
- *   order  — allowed: asc, desc                     (default: desc)
- */
-function getAllTopics(PDO $db): void
-{
-    // TODO: Build the base SELECT query.
-    // SELECT id, subject, message, author, created_at FROM topics
-
-    // TODO: If $_GET['search'] is provided and non-empty, append:
-    // WHERE subject LIKE :search OR message LIKE :search OR author LIKE :search
-    // Bind '%' . $search . '%' to :search.
-
-    // TODO: Validate $_GET['sort'] against the whitelist
-    // [subject, author, created_at].
-    // Default to 'created_at' if missing or invalid.
-
-    // TODO: Validate $_GET['order'] against [asc, desc].
-    // Default to 'desc' if missing or invalid.
-
-    // TODO: Append ORDER BY {sort} {order} to the query.
-
-    // TODO: Prepare, bind (if searching), and execute the statement.
-
-    // TODO: Fetch all rows as an associative array.
-
-    // TODO: Call sendResponse(['success' => true, 'data' => $topics]);
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
 }
 
+require_once __DIR__ . '/db.php';
 
-/**
- * Get a single topic by its integer primary key.
- * Method: GET with ?id={id}.
- *
- * Response (found):
- *   { "success": true, "data": { id, subject, message, author, created_at } }
- * Response (not found): HTTP 404.
- */
-function getTopicById(PDO $db, $id): void
-{
-    // TODO: Validate that $id is provided and numeric.
-    // If not, sendResponse HTTP 400.
+$db      = getDBConnection();
+$method  = $_SERVER['REQUEST_METHOD'];
+$raw     = file_get_contents('php://input');
+$data    = json_decode($raw, true) ?? [];
+$id      = isset($_GET['id'])       ? (int) $_GET['id']    : null;
+$action  = isset($_GET['action'])   ? trim($_GET['action']) : null;
+$search  = isset($_GET['search'])   ? trim($_GET['search']) : null;
+$topicId = isset($_GET['topic_id']) ? (int) $_GET['topic_id'] : null;
 
-    // TODO: SELECT id, subject, message, author, created_at
-    //       FROM topics WHERE id = ?
-
-    // TODO: Fetch one row.
-    // If found, sendResponse success with the topic.
-    // If not found, sendResponse HTTP 404.
+function sendResponse($data, $statusCode = 200) {
+    http_response_code($statusCode);
+    echo $statusCode < 400
+        ? json_encode(['success' => true,  'data'    => $data])
+        : json_encode(['success' => false, 'message' => $data]);
+    exit;
 }
 
-
-/**
- * Create a new topic.
- * Method: POST (no ?action parameter).
- *
- * Required JSON body fields:
- *   subject — string (required)
- *   message — string (required)
- *   author  — string (required)
- *
- * Response (success): HTTP 201 — { success, message, id }
- * Response (missing fields): HTTP 400.
- *
- * Note: id and created_at are handled automatically by MySQL.
- */
-function createTopic(PDO $db, array $data): void
-{
-    // TODO: Validate that subject, message, and author are present and
-    // non-empty. If missing, sendResponse HTTP 400.
-
-    // TODO: Trim subject, message, and author.
-
-    // TODO: INSERT INTO topics (subject, message, author) VALUES (?, ?, ?)
-    // Note: id and created_at are set automatically by MySQL.
-
-    // TODO: If rowCount() > 0, sendResponse HTTP 201 with the new integer
-    // id from $db->lastInsertId().
-    // Otherwise sendResponse HTTP 500.
+function sanitizeInput(string $data): string {
+    return htmlspecialchars(strip_tags(trim($data)), ENT_QUOTES, 'UTF-8');
 }
 
+function getAllTopics($db) {
+    global $search;
+    $sql    = 'SELECT id, subject, message, author, created_at FROM topics';
+    $params = [];
 
-/**
- * Update an existing topic.
- * Method: PUT.
- *
- * Required JSON body:
- *   id — integer primary key of the topic to update (required).
- * Optional JSON body fields (at least one must be present):
- *   subject, message.
- *
- * Response (success): HTTP 200.
- * Response (not found): HTTP 404.
- */
-function updateTopic(PDO $db, array $data): void
-{
-    // TODO: Validate that $data['id'] is present.
-    // If not, sendResponse HTTP 400.
+    if (!empty($search)) {
+        $sql .= ' WHERE subject LIKE :search OR message LIKE :search OR author LIKE :search';
+        $params[':search'] = '%' . $search . '%';
+    }
 
-    // TODO: Check that a topic with this id exists.
-    // If not, sendResponse HTTP 404.
+    $allowed = ['subject', 'author', 'created_at'];
+    $sort    = isset($_GET['sort']) && in_array($_GET['sort'], $allowed, true) ? $_GET['sort'] : 'created_at';
+    $order   = isset($_GET['order']) && strtolower($_GET['order']) === 'asc' ? 'ASC' : 'DESC';
 
-    // TODO: Dynamically build the SET clause for whichever of
-    // subject, message are present in $data.
+    $sql .= " ORDER BY {$sort} {$order}";
 
-    // TODO: If no updatable fields are present, sendResponse HTTP 400.
-
-    // TODO: Build: UPDATE topics SET {clauses} WHERE id = ?
-    // Prepare, bind all SET values, then bind id, and execute.
-
-    // TODO: sendResponse HTTP 200 on success, HTTP 500 on failure.
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    sendResponse($stmt->fetchAll(PDO::FETCH_ASSOC), 200);
 }
 
+function getTopicById($db, $id) {
+    if (!$id || !is_numeric($id)) sendResponse('id is required.', 400);
 
-/**
- * Delete a topic by integer id.
- * Method: DELETE with ?id={id}.
- *
- * The ON DELETE CASCADE constraint on replies.topic_id automatically
- * removes all replies for this topic — no manual deletion of replies
- * is needed.
- *
- * Response (success): HTTP 200.
- * Response (not found): HTTP 404.
- */
-function deleteTopic(PDO $db, $id): void
-{
-    // TODO: Validate that $id is provided and numeric.
-    // If not, sendResponse HTTP 400.
-
-    // TODO: Check that a topic with this id exists.
-    // If not, sendResponse HTTP 404.
-
-    // TODO: DELETE FROM topics WHERE id = ?
-    // (replies rows are removed automatically by ON DELETE CASCADE.)
-
-    // TODO: If rowCount() > 0, sendResponse HTTP 200.
-    // Otherwise sendResponse HTTP 500.
+    $stmt = $db->prepare('SELECT id, subject, message, author, created_at FROM topics WHERE id = :id');
+    $stmt->execute([':id' => $id]);
+    $topic = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$topic) sendResponse('Topic not found.', 404);
+    sendResponse($topic, 200);
 }
 
+function createTopic($db, $data) {
+    if (empty($data['subject']) || empty($data['message']) || empty($data['author'])) {
+        sendResponse('subject, message and author are required.', 400);
+    }
 
-// ============================================================================
-// REPLIES FUNCTIONS
-// ============================================================================
+    $subject = sanitizeInput($data['subject']);
+    $message = sanitizeInput($data['message']);
+    $author  = sanitizeInput($data['author']);
 
-/**
- * Get all replies for a specific topic.
- * Method: GET with ?action=replies&topic_id={id}.
- *
- * Reads from the replies table.
- * Returns an empty data array if no replies exist — not an error.
- *
- * Each reply object: { id, topic_id, text, author, created_at }
- */
-function getRepliesByTopicId(PDO $db, $topicId): void
-{
-    // TODO: Validate that $topicId is provided and numeric.
-    // If not, sendResponse HTTP 400.
+    $stmt = $db->prepare('INSERT INTO topics (subject, message, author) VALUES (:subject, :message, :author)');
+    $stmt->execute([':subject' => $subject, ':message' => $message, ':author' => $author]);
 
-    // TODO: SELECT id, topic_id, text, author, created_at
-    //       FROM replies
-    //       WHERE topic_id = ?
-    //       ORDER BY created_at ASC
-
-    // TODO: Fetch all rows. Return sendResponse with the array
-    //       (empty array is valid).
+    if ($stmt->rowCount() > 0) {
+        $newId = (int) $db->lastInsertId();
+        http_response_code(201);
+        echo json_encode(['success' => true, 'id' => $newId, 'data' => ['id' => $newId]]);
+        exit;
+    }
+    sendResponse('Failed to create topic.', 500);
 }
 
+function updateTopic($db, $data) {
+    if (empty($data['id'])) sendResponse('id is required.', 400);
+    $id = (int) $data['id'];
 
-/**
- * Create a new reply.
- * Method: POST with ?action=reply.
- *
- * Required JSON body:
- *   topic_id — integer FK into topics.id (required)
- *   text     — string (required, must be non-empty after trim)
- *   author   — string (required)
- *
- * Response (success): HTTP 201 — { success, message, id, data: reply }
- * Response (topic not found): HTTP 404.
- * Response (missing fields): HTTP 400.
- *
- * Note: id and created_at are handled automatically by MySQL.
- */
-function createReply(PDO $db, array $data): void
-{
-    // TODO: Validate that topic_id, text, and author are all present and
-    // non-empty after trimming. If any are missing, sendResponse HTTP 400.
+    $check = $db->prepare('SELECT id FROM topics WHERE id = :id');
+    $check->execute([':id' => $id]);
+    if (!$check->fetch()) sendResponse('Topic not found.', 404);
 
-    // TODO: Validate that topic_id is numeric.
+    $fields = [];
+    $params = [];
 
-    // TODO: Check that a topic with this id exists in the topics table.
-    // If not, sendResponse HTTP 404.
+    if (isset($data['subject'])) {
+        $fields[]           = 'subject = :subject';
+        $params[':subject'] = sanitizeInput($data['subject']);
+    }
+    if (isset($data['message'])) {
+        $fields[]           = 'message = :message';
+        $params[':message'] = sanitizeInput($data['message']);
+    }
 
-    // TODO: INSERT INTO replies (topic_id, text, author) VALUES (?, ?, ?)
-    // Note: id and created_at are set automatically by MySQL.
+    if (empty($fields)) sendResponse('Nothing to update.', 400);
 
-    // TODO: If rowCount() > 0, sendResponse HTTP 201 with the new id
-    //       and the full new reply object.
-    // Otherwise sendResponse HTTP 500.
+    $params[':id'] = $id;
+    $stmt = $db->prepare('UPDATE topics SET ' . implode(', ', $fields) . ' WHERE id = :id');
+    $ok   = $stmt->execute($params);
+
+    if ($ok) sendResponse('Topic updated successfully.', 200);
+    sendResponse('Failed to update topic.', 500);
 }
 
+function deleteTopic($db, $id) {
+    if (!$id || !is_numeric($id)) sendResponse('id is required.', 400);
 
-/**
- * Delete a single reply.
- * Method: DELETE with ?action=delete_reply&id={id}.
- *
- * Response (success): HTTP 200.
- * Response (not found): HTTP 404.
- */
-function deleteReply(PDO $db, $replyId): void
-{
-    // TODO: Validate that $replyId is provided and numeric.
-    // If not, sendResponse HTTP 400.
+    $check = $db->prepare('SELECT id FROM topics WHERE id = :id');
+    $check->execute([':id' => $id]);
+    if (!$check->fetch()) sendResponse('Topic not found.', 404);
 
-    // TODO: Check that the reply exists in the replies table.
-    // If not, sendResponse HTTP 404.
+    $stmt = $db->prepare('DELETE FROM topics WHERE id = :id');
+    $stmt->execute([':id' => $id]);
 
-    // TODO: DELETE FROM replies WHERE id = ?
-
-    // TODO: If rowCount() > 0, sendResponse HTTP 200.
-    // Otherwise sendResponse HTTP 500.
+    if ($stmt->rowCount() > 0) sendResponse('Topic deleted successfully.', 200);
+    sendResponse('Failed to delete topic.', 500);
 }
 
+function getRepliesByTopicId($db, $topicId) {
+    if (!$topicId || !is_numeric($topicId)) sendResponse('topic_id is required.', 400);
 
-// ============================================================================
-// MAIN REQUEST ROUTER
-// ============================================================================
+    $stmt = $db->prepare(
+        'SELECT id, topic_id, text, author, created_at FROM replies WHERE topic_id = :topic_id ORDER BY created_at ASC'
+    );
+    $stmt->execute([':topic_id' => $topicId]);
+    sendResponse($stmt->fetchAll(PDO::FETCH_ASSOC), 200);
+}
+
+function createReply($db, $data) {
+    if (empty($data['topic_id'])) sendResponse('topic_id is required.', 400);
+    if (empty($data['text']))     sendResponse('text is required.', 400);
+    if (empty($data['author']))   sendResponse('author is required.', 400);
+
+    $topicId = (int) $data['topic_id'];
+    $text    = sanitizeInput($data['text']);
+    $author  = sanitizeInput($data['author']);
+
+    $check = $db->prepare('SELECT id FROM topics WHERE id = :id');
+    $check->execute([':id' => $topicId]);
+    if (!$check->fetch()) sendResponse('Topic not found.', 404);
+
+    $stmt = $db->prepare('INSERT INTO replies (topic_id, text, author) VALUES (:topic_id, :text, :author)');
+    $stmt->execute([':topic_id' => $topicId, ':text' => $text, ':author' => $author]);
+
+    if ($stmt->rowCount() > 0) {
+        $newId = (int) $db->lastInsertId();
+        $rep   = $db->prepare('SELECT id, topic_id, text, author, created_at FROM replies WHERE id = :id');
+        $rep->execute([':id' => $newId]);
+        $reply = $rep->fetch(PDO::FETCH_ASSOC);
+        http_response_code(201);
+        echo json_encode(['success' => true, 'id' => $newId, 'data' => $reply]);
+        exit;
+    }
+    sendResponse('Failed to create reply.', 500);
+}
+
+function deleteReply($db, $id) {
+    if (!$id || !is_numeric($id)) sendResponse('id is required.', 400);
+
+    $check = $db->prepare('SELECT id FROM replies WHERE id = :id');
+    $check->execute([':id' => $id]);
+    if (!$check->fetch()) sendResponse('Reply not found.', 404);
+
+    $stmt = $db->prepare('DELETE FROM replies WHERE id = :id');
+    $stmt->execute([':id' => $id]);
+
+    if ($stmt->rowCount() > 0) sendResponse('Reply deleted successfully.', 200);
+    sendResponse('Failed to delete reply.', 500);
+}
 
 try {
 
     if ($method === 'GET') {
-
-        // ?action=replies&topic_id={id} → list replies for a topic
-        // TODO: if $action === 'replies', call getRepliesByTopicId($db, $topicId)
-
-        // ?id={id} → single topic
-        // TODO: elseif $id is set, call getTopicById($db, $id)
-
-        // no parameters → all topics (supports ?search, ?sort, ?order)
-        // TODO: else call getAllTopics($db)
+        if ($action === 'replies') {
+            getRepliesByTopicId($db, $topicId);
+        } elseif (!empty($id)) {
+            getTopicById($db, $id);
+        } else {
+            getAllTopics($db);
+        }
 
     } elseif ($method === 'POST') {
-
-        // ?action=reply → create a reply in the replies table
-        // TODO: if $action === 'reply', call createReply($db, $data)
-
-        // no action → create a new topic
-        // TODO: else call createTopic($db, $data)
+        if ($action === 'reply') {
+            createReply($db, $data);
+        } else {
+            createTopic($db, $data);
+        }
 
     } elseif ($method === 'PUT') {
-
-        // Update a topic; id comes from the JSON body
-        // TODO: call updateTopic($db, $data)
+        updateTopic($db, $data);
 
     } elseif ($method === 'DELETE') {
-
-        // ?action=delete_reply&id={id} → delete one reply
-        // TODO: if $action === 'delete_reply', call deleteReply($db, $id)
-
-        // ?id={id} → delete a topic (and its replies via CASCADE)
-        // TODO: else call deleteTopic($db, $id)
+        if ($action === 'delete_reply') {
+            deleteReply($db, $id);
+        } else {
+            deleteTopic($db, $id);
+        }
 
     } else {
-        // TODO: sendResponse HTTP 405 Method Not Allowed.
+        sendResponse('Method not allowed.', 405);
     }
 
 } catch (PDOException $e) {
-    // TODO: Log the error with error_log().
-    // Return a generic HTTP 500 — do NOT expose $e->getMessage() to clients.
-
+    error_log($e->getMessage());
+    sendResponse('A database error occurred. Please try again.', 500);
 } catch (Exception $e) {
-    // TODO: Log the error with error_log().
-    // Return HTTP 500 using sendResponse().
+    error_log($e->getMessage());
+    sendResponse('A server error occurred. Please try again.', 500);
 }
-
-
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-/**
- * Send a JSON response and stop execution.
- *
- * @param array $data        Must include a 'success' key.
- * @param int   $statusCode  HTTP status code (default 200).
- */
-function sendResponse(array $data, int $statusCode = 200): void
-{
-    // TODO: http_response_code($statusCode);
-    // TODO: echo json_encode($data, JSON_PRETTY_PRINT);
-    // TODO: exit;
-}
-
-
-/**
- * Sanitize a string input.
- *
- * @param  string $data
- * @return string  Trimmed, tag-stripped, HTML-encoded string.
- */
-function sanitizeInput(string $data): string
-{
-    // TODO: return htmlspecialchars(strip_tags(trim($data)), ENT_QUOTES, 'UTF-8');
-}
+?>

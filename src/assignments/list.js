@@ -1,33 +1,8 @@
-/*
-  Requirement: Populate the "Course Assignments" list page.
-
-  Instructions:
-  1. This file is already linked to `list.html` via:
-         <script src="list.js" defer></script>
-
-  2. In `list.html`, the <section id="assignment-list-section"> is the
-     container that this script populates.
-
-  3. Implement the TODOs below.
-
-  API base URL: ./api/index.php
-  Successful list response shape: { success: true, data: [ ...assignment objects ] }
-  Each assignment object shape:
-    {
-      id:          number,   // integer primary key from the assignments table
-      title:       string,
-      due_date:    string,   // "YYYY-MM-DD" — matches the SQL column name
-      description: string,
-      files:       string[]  // already decoded array of URL strings
-    }
-*/
-
 // --- Element Selections ---
 // TODO: Select the section for the assignment list using its
 //       id 'assignment-list-section'.
-
+const assignmentListSection = document.getElementById('assignment-list-section');
 // --- Functions ---
-
 /**
  * TODO: Implement createAssignmentArticle.
  *
@@ -54,9 +29,21 @@
  * the assignments table) so that details.js can read the id from the URL.
  */
 function createAssignmentArticle(assignment) {
-  // ... your implementation here ...
-}
-
+  const article = document.createElement('article');
+  const h2 = document.createElement('h2');
+  h2.textContent = assignment.title;
+  const pDue = document.createElement('p');
+  pDue.textContent = 'Due: ' + assignment.due_date;
+  const pDesc = document.createElement('p');
+  pDesc.textContent = assignment.description;
+  const a = document.createElement('a');
+  a.href = `details.html?id=${assignment.id}`;
+  a.textContent = 'View Details & Discussion'; 
+  article.appendChild(h2);
+  article.appendChild(pDue);
+  article.appendChild(pDesc);
+  article.appendChild(a);
+  return article;}
 /**
  * TODO: Implement loadAssignments (async).
  *
@@ -71,8 +58,14 @@ function createAssignmentArticle(assignment) {
  *    - Append the returned <article> to the list section.
  */
 async function loadAssignments() {
-  // ... your implementation here ...
-}
+  const response = await fetch('./api/index.php');
+  const result = await response.json();
+  assignmentListSection.innerHTML = '';
+  if (result.success && result.data) {
+    result.data.forEach(assignment => {
+      assignmentListSection.appendChild(createAssignmentArticle(assignment));
+    });
+  }}
 
 // --- Initial Page Load ---
 loadAssignments();
